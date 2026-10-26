@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>BrandScanner — Reseller View</title>
+<style>
+:root{--bg:#f6f6f4;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;--accent:#1f6f5c;--border:#e4e4df;--danger:#c0392b;--good:#1faa59}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1d1d1d;--text:#f0f0f0;--muted:#a0a0a0;--accent:#4cc3a4;--border:#2c2c2c;--danger:#ff6b5b;--good:#25c26a}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 40px}
+h1{margin:0;font-size:22px}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.login{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:20px;display:flex;flex-direction:column;gap:10px;max-width:420px}
+input,select,button{font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+button{background:var(--accent);color:#fff;border:none;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:var(--danger);font-size:13px;min-height:16px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+.controls input,.controls select{flex:1 1 150px}
+.summary{color:var(--muted);font-size:13px;margin-bottom:10px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;gap:10px}
+.thumb{flex:0 0 76px;width:76px;height:76px;border-radius:10px;overflow:hidden;background:var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.body{flex:1;min-width:0}
+.name{font-weight:600;font-size:14px;line-height:1.3;word-break:break-word}
+.code{color:var(--muted);font-size:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 10px;margin-top:6px;font-size:13px}
+.row{display:flex;justify-content:space-between;gap:8px}
+.row span:first-child{color:var(--muted)}
+.cost{color:var(--text)}
+.margin{color:var(--accent);font-weight:600}
+.price{font-weight:700}
+.store{color:var(--muted);font-size:12px;margin-top:6px;word-break:break-all}
+.links{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;font-size:13px}
+.links a{color:var(--accent);text-decoration:none}
+.links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Reseller View</h1>
+  <div class="sub">Private page. Password ke bina kuch nahi dikhega.</div>
+
+  <div class="login" id="login">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="go">Unlock</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Naam ya code search">
+      <select id="store"><option value="">All stores</option></select>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var loginBox = document.getElementById('login');
+  var pwEl = document.getElementById('pw');
+  var goBtn = document.getElementById('go');
+  var errEl = document.getElementById('err');
+  var app = document.getElementById('app');
+  var qEl = document.getElementById('q');
+  var storeEl = document.getElementById('store');
+  var summaryEl = document.getElementById('summary');
+  var listEl = document.getElementById('list');
+
+  var ALL = [];
+
+  function b64ToBytes(s) {
+    var bin = atob(s);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function fmt(n) {
+    var x = Number(n);
+    if (!isFinite(x)) return '—';
+    return '\u20B9' + x.toLocaleString('en-IN');
+  }
+
+  function resolveImg(p) {
+    if (!p) return '';
+    if (/^https?:\/\//i.test(p)) return p;
+    return '../' + p.replace(/^\.?\//, '');
+  }
+
+  async function decryptEnc(enc, pass) {
+    if (!crypto || !crypto.subtle) {
+      throw new Error('Is browser me crypto.subtle nahi hai. HTTPS par kholo (GitHub Pages theek hai).');
+    }
+    var salt = b64ToBytes(enc.salt);
+    var iv = b64ToBytes(enc.iv);
+    var ct = b64ToBytes(enc.ct);
+    var iter = enc.iter || 200000;
+    var baseKey = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(pass),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    var key = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' },
+      baseKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['decrypt']
+    );
+    var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  function fillStores() {
+    var names = {};
+    ALL.forEach(function (p) { if (p.store_name) names[p.store_name] = true; });
+    Object.keys(names).sort().forEach(function (n) {
+      var o = document.createElement('option');
+      o.value = n;
+      o.textContent = n;
+      storeEl.appendChild(o);
+    });
+  }
+
+  function itemEl(p) {
+    var el = document.createElement('div');
+    el.className = 'item';
+
+    var thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    var src = resolveImg(p.image);
+    if (src) {
+      var img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = p.name || '';
+      img.referrerPolicy = 'no-referrer';
+      img.onerror = function () { thumb.removeChild(img); thumb.textContent = 'No img'; };
+      img.src = src;
+      thumb.appendChild(img);
+    } else {
+      thumb.textContent = 'No img';
+    }
+    el.appendChild(thumb);
+
+    var body = document.createElement('div');
+    body.className = 'body';
+
+    var name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = p.name || '';
+
+    var code = document.createElement('div');
+    code.className = 'code';
+    code.textContent = 'Code: ' + (p.code || '');
+
+    var g = document.createElement('div');
+    g.className = 'grid2';
+
+    function row(label, value, cls) {
+      var r = document.createElement('div');
+      r.className = 'row' + (cls ? ' ' + cls : '');
+      var a = document.createElement('span');
+      a.textContent = label;
+      var b = document.createElement('span');
+      b.textContent = value;
+      r.appendChild(a); r.appendChild(b);
+      return r;
+    }
+
+    g.appendChild(row('Cost', fmt(p.cost)));
+    g.appendChild(row('Margin', fmt(p.margin), 'margin'));
+    g.appendChild(row('Sell', fmt(p.price), 'price'));
+    g.appendChild(row('Profit', fmt(p.margin), 'margin'));
+
+    var store = document.createElement('div');
+    store.className = 'store';
+    store.textContent = 'Store: ' + (p.store_name || '') + ' (' + (p.store_host || '') + ')';
+
+    var links = document.createElement('div');
+    links.className = 'links';
+    if (p.store_url) {
+      var a1 = document.createElement('a');
+      a1.href = p.store_url; a1.target = '_blank'; a1.rel = 'noopener noreferrer';
+      a1.textContent = 'Store kholo';
+      links.appendChild(a1);
+    }
+    if (p.product_url) {
+      var a2 = document.createElement('a');
+      a2.href = p.product_url; a2.target = '_blank'; a2.rel = 'noopener noreferrer';
+      a2.textContent = 'Product page';
+      links.appendChild(a2);
+    }
+
+    body.appendChild(name);
+    body.appendChild(code);
+    body.appendChild(g);
+    body.appendChild(store);
+    if (links.children.length) body.appendChild(links);
+    el.appendChild(body);
+    return el;
+  }
+
+  function render() {
+    var term = qEl.value.trim().toLowerCase();
+    var st = storeEl.value;
+    var list = ALL.filter(function (p) {
+      if (st && p.store_name !== st) return false;
+      if (!term) return true;
+      return (p.name || '').toLowerCase().indexOf(term) !== -1 ||
+             String(p.code || '').toLowerCase().indexOf(term) !== -1;
+    });
+    listEl.innerHTML = '';
+    var totalProfit = 0;
+    list.forEach(function (p) {
+      listEl.appendChild(itemEl(p));
+      totalProfit += Number(p.margin) || 0;
+    });
+    summaryEl.textContent = list.length + ' / ' + ALL.length + ' products  |  listed profit: ' + fmt(totalProfit);
+  }
+
+  goBtn.addEventListener('click', async function () {
+    errEl.textContent = '';
+    var pass = pwEl.value;
+    if (!pass) { errEl.textContent = 'Password daalo.'; return; }
+    goBtn.disabled = true;
+    goBtn.textContent = 'Unlocking...';
+    try {
+      var r = await fetch('../admin.enc?v=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error('admin.enc nahi mili (HTTP ' + r.status + ')');
+      var enc = await r.json();
+      var data = await decryptEnc(enc, pass);
+      ALL = (data && Array.isArray(data.products)) ? data.products : [];
+      ALL.sort(function (a, b) {
+        return String(b.first_seen || '').localeCompare(String(a.first_seen || ''));
+      });
+      loginBox.hidden = true;
+      app.hidden = false;
+      pwEl.value = '';
+      fillStores();
+      render();
+    } catch (e) {
+      errEl.textContent = (String(e && e.message || e).indexOf('admin.enc') !== -1)
+        ? 'admin.enc abhi publish nahi hui. Thodi der baad try karo.'
+        : 'Galat password ya corrupt file.';
+    } finally {
+      goBtn.disabled = false;
+      goBtn.textContent = 'Unlock';
+    }
+  });
+
+  qEl.addEventListener('input', render);
+  storeEl.addEventListener('change', render);
+})();
+</script>
+</body>
+</html>
