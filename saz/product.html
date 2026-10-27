@@ -23,7 +23,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 .dots[hidden]{display:none}
 .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer}
 .dot.active{background:#fff}
-.video-wrap{margin-top:14px;border-radius:14px;overflow:hidden;background:var(--border)}
+.video-wrap{margin-top:14px;border-radius:14px;overflow:hidden;background:#000}
 .video-wrap video{width:100%;display:block}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
 .name{font-size:20px;font-weight:700;line-height:1.3;word-break:break-word}
@@ -96,6 +96,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 </div>
 <script>
 (function(){
+  var VIDEO_BASE = 'https://cdn.cartpe.in/images/video_upload/';
   var code = new URLSearchParams(location.search).get('code');
   var loading = document.getElementById('loading');
   var error = document.getElementById('error');
@@ -108,9 +109,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
   if (!code) { showError(); return; }
 
   function showError(){ loading.hidden = true; error.hidden = false; }
-
   function fmt(n){ var x = Number(n); return isFinite(x) ? '\u20B9' + x.toLocaleString('en-IN') : '—'; }
-
   function resolveImg(p){ if (!p) return ''; if (/^https?:\/\//i.test(p)) return p; return '../' + p.replace(/^\.?\//,''); }
 
   function galleryList(p){
@@ -184,6 +183,24 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     for (var k = 0; k < allDots.length; k++) allDots[k].classList.toggle('active', k === current);
   }
 
+  function setupVideo(videoField) {
+    if (!videoField) return;
+    var filename = String(videoField).trim();
+    if (!filename) return;
+    var url = VIDEO_BASE + filename;
+
+    var vw = document.getElementById('videoWrap');
+    var v = document.createElement('video');
+    v.controls = true;
+    v.preload = 'metadata';
+    v.playsInline = true;
+    v.src = url;
+    v.onerror = function(){ vw.hidden = true; vw.innerHTML = ''; };
+    vw.innerHTML = '';
+    vw.appendChild(v);
+    vw.hidden = false;
+  }
+
   function render(p){
     loading.hidden = true;
     login.hidden = true;
@@ -191,20 +208,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     document.title = (p.name||'Product') + ' — Reseller';
 
     buildGallery(galleryList(p), p.name);
-
-    if (p.video) {
-      var vid = String(p.video).trim();
-      var url = /^https?:\/\//i.test(vid) ? vid : ('https://cdn.cartpe.in/' + vid);
-      var vw = document.getElementById('videoWrap');
-      var v = document.createElement('video');
-      v.controls = true;
-      v.preload = 'metadata';
-      v.src = url;
-      v.onerror = function(){ vw.hidden = true; vw.innerHTML = ''; };
-      vw.innerHTML = '';
-      vw.appendChild(v);
-      vw.hidden = false;
-    }
+    setupVideo(p.video);
 
     document.getElementById('name').textContent = p.name || '';
     document.getElementById('code').textContent = 'Code: ' + (p.code||'');
