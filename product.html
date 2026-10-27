@@ -67,6 +67,7 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 <script>
 (function(){
   var WHATSAPP = '917990643295';
+  var VIDEO_BASE = 'https://cdn.cartpe.in/images/video_upload/';
   var params = new URLSearchParams(window.location.search);
   var code = params.get('code');
   var loading = document.getElementById('loading');
@@ -118,75 +119,23 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     }
   }
 
-  // ---- VIDEO: try multiple patterns sequentially, silent fallback ----
+  // SIMPLE: single correct URL pattern
   function setupVideo(videoField) {
     if (!videoField) return;
     var filename = String(videoField).trim();
     if (!filename) return;
-
-    var patterns = [
-      // if already full URL
-      filename.match(/^https?:\/\//i) ? filename : null,
-      // common CDN patterns
-      'https://cdn.cartpe.in/' + filename,
-      'https://cdn.cartpe.in/videos/' + filename,
-      'https://cdn.cartpe.in/video/' + filename,
-      'https://cdn.cartpe.in/uploads/' + filename,
-      'https://cdn.cartpe.in/media/' + filename,
-      'https://video.cartpe.in/' + filename,
-      'https://videos.cartpe.in/' + filename,
-      'https://media.cartpe.in/' + filename,
-      'https://stream.cartpe.in/' + filename,
-      'https://assets.cartpe.in/' + filename,
-      'https://files.cartpe.in/' + filename,
-    ].filter(Boolean);
+    var url = VIDEO_BASE + filename;
 
     var vw = document.getElementById('videoWrap');
-    var idx = 0;
-    var current = null;
-    var timer = null;
-
-    function cleanup() {
-      if (timer) { clearTimeout(timer); timer = null; }
-      if (current) { try { current.pause(); } catch(e){}; try { current.remove(); } catch(e){}; current = null; }
-      vw.innerHTML = '';
-    }
-
-    function next() {
-      cleanup();
-      if (idx >= patterns.length) {
-        // All failed - silently hide (no flicker)
-        vw.hidden = true;
-        return;
-      }
-      var url = patterns[idx++];
-
-      var v = document.createElement('video');
-      v.controls = true;
-      v.preload = 'metadata';
-      v.playsInline = true;
-      v.src = url;
-      current = v;
-
-      timer = setTimeout(function(){
-        // Timeout -> try next
-        if (current === v && v.readyState === 0) next();
-      }, 3500);
-
-      v.onloadedmetadata = function(){
-        if (timer) { clearTimeout(timer); timer = null; }
-        vw.innerHTML = '';
-        vw.appendChild(v);
-        vw.hidden = false;
-      };
-
-      v.onerror = function(){
-        if (timer) { clearTimeout(timer); timer = null; }
-        next();
-      };
-    }
-
-    next();
+    var v = document.createElement('video');
+    v.controls = true;
+    v.preload = 'metadata';
+    v.playsInline = true;
+    v.src = url;
+    v.onerror = function(){ vw.hidden = true; vw.innerHTML = ''; };
+    vw.innerHTML = '';
+    vw.appendChild(v);
+    vw.hidden = false;
   }
 
   var current = 0;
