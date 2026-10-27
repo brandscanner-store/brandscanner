@@ -12,8 +12,19 @@
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
 .wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px}
 .back{display:inline-block;padding:8px 0;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px}
-.big-image{aspect-ratio:1/1;background:var(--border);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;margin-top:8px}
-.big-image img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:14px;background:var(--border);margin-top:8px}
+.gallery-track{display:flex;height:100%;transition:transform .3s ease}
+.gallery-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;display:block}
+.gallery-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.gal-prev{left:10px}.gal-next{right:10px}
+.gal-nav[hidden]{display:none}
+.dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.dots[hidden]{display:none}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer}
+.dot.active{background:#fff}
+.video-wrap{margin-top:14px;border-radius:14px;overflow:hidden;background:var(--border)}
+.video-wrap video{width:100%;display:block}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
 .name{font-size:20px;font-weight:700;line-height:1.3;word-break:break-word}
 .code{color:var(--muted);font-size:14px;margin-top:6px}
@@ -27,14 +38,17 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 .stat.profit .value{color:var(--good);font-size:22px}
 .meta{margin-top:16px;font-size:14px;line-height:1.8}
 .meta .k{color:var(--muted);display:inline-block;min-width:120px}
-.meta .v{font-weight:600}
+.meta .v{font-weight:600;word-break:break-all}
 .links{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
 .links a{background:var(--accent);color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px}
 .links a.store{background:var(--card);color:var(--accent);border:1px solid var(--accent)}
+.desc-box{margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.desc-box h3{margin:0 0 8px;font-size:16px}
+.desc-box p{margin:0;font-size:14px;line-height:1.55;white-space:pre-wrap;color:var(--text)}
 .loading,.error{text-align:center;padding:40px 20px;color:var(--muted)}
 .error a{color:var(--accent);text-decoration:none;font-weight:600}
 .login{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:20px;display:flex;flex-direction:column;gap:10px;max-width:420px}
-.login input, .login button{font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+.login input,.login button{font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)}
 .login button{background:var(--accent);color:#fff;border:none;font-weight:600;cursor:pointer}
 .login button:disabled{opacity:.6;cursor:wait}
 .err{color:var(--danger);font-size:13px;min-height:16px}
@@ -51,7 +65,13 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     <div class="err" id="err"></div>
   </div>
   <div id="content" hidden>
-    <div class="big-image" id="img"></div>
+    <div class="gallery">
+      <div class="gallery-track" id="track"></div>
+      <button class="gal-nav gal-prev" id="galPrev" aria-label="Previous photo">‹</button>
+      <button class="gal-nav gal-next" id="galNext" aria-label="Next photo">›</button>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="video-wrap" id="videoWrap" hidden></div>
     <div class="card">
       <div class="name" id="name"></div>
       <div class="code" id="code"></div>
@@ -67,6 +87,10 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
         <div><span class="k">Added</span><span class="v" id="added">—</span></div>
       </div>
       <div class="links" id="links"></div>
+    </div>
+    <div class="desc-box" id="descBox" hidden>
+      <h3>Description (from wholesaler)</h3>
+      <p id="descText"></p>
     </div>
   </div>
 </div>
@@ -89,18 +113,76 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 
   function resolveImg(p){ if (!p) return ''; if (/^https?:\/\//i.test(p)) return p; return '../' + p.replace(/^\.?\//,''); }
 
-  // Fresh URL builder - never trust stale product_url
-  function buildProductUrl(p) {
-    var host = (p.store_host || '').trim();
-    var slug = (p.slug || '').trim();
-    if (!host) return '';
-    if (p.product_url && p.product_url.indexOf(host) !== -1) return p.product_url;
-    if (!slug) return '';
-    if (p.platform === 'jdwebconnect') return 'https://' + host + '/product/' + slug;
-    return 'https://' + host + '/product-detail/' + slug;
+  function galleryList(p){
+    var arr = [];
+    if (Array.isArray(p.images)) { for (var i=0;i<p.images.length;i++){ if (p.images[i]) arr.push(p.images[i]); } }
+    if (!arr.length && p.image) arr.push(p.image);
+    return arr;
   }
 
   function findIn(list){ for (var i=0;i<list.length;i++){ if (list[i] && list[i].code === code) return list[i]; } return null; }
+
+  var current = 0;
+  var total = 0;
+
+  function buildGallery(images, altName){
+    var track = document.getElementById('track');
+    var dots = document.getElementById('dots');
+    var prev = document.getElementById('galPrev');
+    var next = document.getElementById('galNext');
+    track.innerHTML = '';
+    dots.innerHTML = '';
+    current = 0;
+    total = images.length;
+
+    if (!total) {
+      var em = document.createElement('div');
+      em.className = 'gallery-empty';
+      em.textContent = 'Photo coming soon';
+      track.appendChild(em);
+      prev.hidden = true; next.hidden = true; dots.hidden = true;
+      return;
+    }
+
+    images.forEach(function(src, i){
+      var img = document.createElement('img');
+      img.loading = (i === 0 ? 'eager' : 'lazy');
+      img.alt = altName || '';
+      img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); };
+      img.src = resolveImg(src);
+      track.appendChild(img);
+
+      var dot = document.createElement('span');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.onclick = function(){ goTo(i); };
+      dots.appendChild(dot);
+    });
+
+    if (total <= 1) {
+      prev.hidden = true; next.hidden = true; dots.hidden = true;
+    } else {
+      prev.hidden = false; next.hidden = false; dots.hidden = false;
+      prev.onclick = function(){ goTo(current - 1); };
+      next.onclick = function(){ goTo(current + 1); };
+    }
+
+    var startX = null;
+    track.addEventListener('touchstart', function(e){ if (e.touches.length) startX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend', function(e){
+      if (startX === null) return;
+      var dx = (e.changedTouches[0].clientX - startX);
+      if (Math.abs(dx) > 40) { dx < 0 ? goTo(current + 1) : goTo(current - 1); }
+      startX = null;
+    }, {passive:true});
+  }
+
+  function goTo(i){
+    if (total <= 1) return;
+    current = ((i % total) + total) % total;
+    document.getElementById('track').style.transform = 'translateX(-' + (current * 100) + '%)';
+    var allDots = document.querySelectorAll('.dot');
+    for (var k = 0; k < allDots.length; k++) allDots[k].classList.toggle('active', k === current);
+  }
 
   function render(p){
     loading.hidden = true;
@@ -108,15 +190,21 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     content.hidden = false;
     document.title = (p.name||'Product') + ' — Reseller';
 
-    var imgEl = document.getElementById('img');
-    var src = resolveImg(p.image);
-    if (src) {
-      var img = document.createElement('img');
-      img.alt = p.name || '';
-      img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); imgEl.textContent = 'Photo coming soon'; };
-      img.src = src;
-      imgEl.appendChild(img);
-    } else { imgEl.textContent = 'Photo coming soon'; }
+    buildGallery(galleryList(p), p.name);
+
+    if (p.video) {
+      var vid = String(p.video).trim();
+      var url = /^https?:\/\//i.test(vid) ? vid : ('https://cdn.cartpe.in/' + vid);
+      var vw = document.getElementById('videoWrap');
+      var v = document.createElement('video');
+      v.controls = true;
+      v.preload = 'metadata';
+      v.src = url;
+      v.onerror = function(){ vw.hidden = true; vw.innerHTML = ''; };
+      vw.innerHTML = '';
+      vw.appendChild(v);
+      vw.hidden = false;
+    }
 
     document.getElementById('name').textContent = p.name || '';
     document.getElementById('code').textContent = 'Code: ' + (p.code||'');
@@ -138,12 +226,16 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
       a.textContent = 'Store kholo';
       links.appendChild(a);
     }
-    var correctUrl = buildProductUrl(p);
-    if (correctUrl) {
+    if (p.product_url) {
       var b = document.createElement('a');
-      b.href = correctUrl; b.target = '_blank'; b.rel = 'noopener noreferrer';
+      b.href = p.product_url; b.target = '_blank'; b.rel = 'noopener noreferrer';
       b.textContent = 'Source product page';
       links.appendChild(b);
+    }
+
+    if (p.description && String(p.description).trim()) {
+      document.getElementById('descText').textContent = String(p.description).trim();
+      document.getElementById('descBox').hidden = false;
     }
   }
 
@@ -161,9 +253,9 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
   try {
     var cached = sessionStorage.getItem('sazProducts');
     if (cached) {
-      var list = JSON.parse(cached);
-      var p = findIn(list);
-      if (p) { render(p); return; }
+      var list0 = JSON.parse(cached);
+      var p0 = findIn(list0);
+      if (p0) { render(p0); return; }
     }
   } catch(e) {}
 
