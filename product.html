@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BrandScanner</title>
+<style>
+:root{--bg:#f6f6f4;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;--accent:#1f6f5c;--wa:#1faa59;--border:#e4e4df}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1d1d1d;--text:#f0f0f0;--muted:#a0a0a0;--accent:#4cc3a4;--wa:#25c26a;--border:#2c2c2c}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:700px;margin:0 auto;padding:16px 16px 40px}
+.back{display:inline-block;padding:8px 0;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px}
+.big-image{aspect-ratio:1/1;background:var(--border);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;margin-top:8px}
+.big-image img{width:100%;height:100%;object-fit:cover;display:block}
+.info{margin-top:16px}
+.name{font-size:20px;font-weight:700;line-height:1.3;word-break:break-word}
+.code{color:var(--muted);font-size:14px;margin-top:6px}
+.price{color:var(--accent);font-weight:800;font-size:28px;margin-top:12px}
+.order{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:20px}
+.order:active{opacity:.85}
+.note{color:var(--muted);font-size:13px;margin-top:12px;text-align:center}
+.loading,.error{text-align:center;padding:40px 20px;color:var(--muted)}
+.error a{color:var(--accent);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" class="back">← Back to products</a>
+  <div id="loading" class="loading">Loading...</div>
+  <div id="error" class="error" hidden>Product nahi mila. <a href="index.html">Wapas jao</a></div>
+  <div id="content" hidden>
+    <div class="big-image" id="img"></div>
+    <div class="info">
+      <div class="name" id="name"></div>
+      <div class="code" id="code"></div>
+      <div class="price" id="price"></div>
+      <a class="order" id="order">WhatsApp par order karo</a>
+      <div class="note">Order confirm karne ke liye WhatsApp par message karo</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var WHATSAPP = '917990643295';
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  var loading = document.getElementById('loading');
+  var error = document.getElementById('error');
+  var content = document.getElementById('content');
+
+  if (!code) { showError(); return; }
+
+  fetch('catalog.json?v=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data){
+      var list = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
+      var p = null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && list[i].code === code) { p = list[i]; break; }
+      }
+      if (!p) { showError(); return; }
+      render(p);
+    })
+    .catch(function(){ showError(); });
+
+  function showError() {
+    loading.hidden = true;
+    error.hidden = false;
+  }
+
+  function fmt(n) {
+    var x = Number(n);
+    if (!isFinite(x)) return '';
+    return '\u20B9' + x.toLocaleString('en-IN');
+  }
+
+  function render(p) {
+    document.title = p.name + ' - BrandScanner';
+    loading.hidden = true;
+    content.hidden = false;
+
+    var imgEl = document.getElementById('img');
+    if (p.image) {
+      var img = document.createElement('img');
+      img.alt = p.name || '';
+      img.loading = 'eager';
+      img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); imgEl.textContent = 'Photo coming soon'; };
+      img.src = p.image;
+      imgEl.appendChild(img);
+    } else {
+      imgEl.textContent = 'Photo coming soon';
+    }
+
+    document.getElementById('name').textContent = p.name || '';
+    document.getElementById('code').textContent = 'Code: ' + (p.code || '');
+    document.getElementById('price').textContent = fmt(p.price);
+
+    var text = 'Hi BrandScanner, mujhe ye watch order karni hai:\n' +
+      p.name + '\nCode: ' + p.code + '\nPrice: ' + fmt(p.price);
+    var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text);
+    document.getElementById('order').href = url;
+  }
+})();
+</script>
+</body>
+</html>
