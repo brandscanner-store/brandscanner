@@ -22,7 +22,9 @@ button:disabled{opacity:.6;cursor:wait}
 .controls input,.controls select{flex:1 1 150px}
 .summary{color:var(--muted);font-size:13px;margin-bottom:10px}
 .list{display:flex;flex-direction:column;gap:10px}
-.item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;gap:10px}
+.item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;gap:10px;cursor:pointer;transition:border-color .15s,transform .15s}
+.item:hover{border-color:var(--accent);transform:translateY(-1px)}
+.item:active{transform:scale(.99)}
 .thumb{flex:0 0 76px;width:76px;height:76px;border-radius:10px;overflow:hidden;background:var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
 .thumb img{width:100%;height:100%;object-fit:cover}
 .body{flex:1;min-width:0}
@@ -31,7 +33,6 @@ button:disabled{opacity:.6;cursor:wait}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 10px;margin-top:6px;font-size:13px}
 .row{display:flex;justify-content:space-between;gap:8px}
 .row span:first-child{color:var(--muted)}
-.cost{color:var(--text)}
 .margin{color:var(--accent);font-weight:600}
 .price{font-weight:700}
 .store{color:var(--muted);font-size:12px;margin-top:6px;word-break:break-all}
@@ -96,25 +97,19 @@ button:disabled{opacity:.6;cursor:wait}
 
   async function decryptEnc(enc, pass) {
     if (!crypto || !crypto.subtle) {
-      throw new Error('Is browser me crypto.subtle nahi hai. HTTPS par kholo (GitHub Pages theek hai).');
+      throw new Error('Is browser me crypto.subtle nahi hai. HTTPS par kholo.');
     }
     var salt = b64ToBytes(enc.salt);
     var iv = b64ToBytes(enc.iv);
     var ct = b64ToBytes(enc.ct);
     var iter = enc.iter || 200000;
     var baseKey = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(pass),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
+      'raw', new TextEncoder().encode(pass),
+      { name: 'PBKDF2' }, false, ['deriveKey']
     );
     var key = await crypto.subtle.deriveKey(
       { name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' },
-      baseKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
+      baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
     );
     var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
     return JSON.parse(new TextDecoder().decode(pt));
@@ -134,6 +129,9 @@ button:disabled{opacity:.6;cursor:wait}
   function itemEl(p) {
     var el = document.createElement('div');
     el.className = 'item';
+    el.onclick = function () {
+      window.location.href = 'product.html?code=' + encodeURIComponent(p.code);
+    };
 
     var thumb = document.createElement('div');
     thumb.className = 'thumb';
@@ -143,7 +141,7 @@ button:disabled{opacity:.6;cursor:wait}
       img.loading = 'lazy';
       img.alt = p.name || '';
       img.referrerPolicy = 'no-referrer';
-      img.onerror = function () { thumb.removeChild(img); thumb.textContent = 'No img'; };
+      img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); thumb.textContent = 'No img'; };
       img.src = src;
       thumb.appendChild(img);
     } else {
@@ -191,12 +189,14 @@ button:disabled{opacity:.6;cursor:wait}
       var a1 = document.createElement('a');
       a1.href = p.store_url; a1.target = '_blank'; a1.rel = 'noopener noreferrer';
       a1.textContent = 'Store kholo';
+      a1.onclick = function(e){ e.stopPropagation(); };
       links.appendChild(a1);
     }
     if (p.product_url) {
       var a2 = document.createElement('a');
       a2.href = p.product_url; a2.target = '_blank'; a2.rel = 'noopener noreferrer';
       a2.textContent = 'Product page';
+      a2.onclick = function(e){ e.stopPropagation(); };
       links.appendChild(a2);
     }
 
@@ -227,6 +227,28 @@ button:disabled{opacity:.6;cursor:wait}
     summaryEl.textContent = list.length + ' / ' + ALL.length + ' products  |  listed profit: ' + fmt(totalProfit);
   }
 
+  function showApp() {
+    loginBox.hidden = true;
+    app.hidden = false;
+    pwEl.value = '';
+    fillStores();
+    render();
+  }
+
+  // Try sessionStorage first
+  try {
+    var cached = sessionStorage.getItem('sazProducts');
+    if (cached) {
+      ALL = JSON.parse(cached);
+      if (Array.isArray(ALL) && ALL.length) {
+        ALL.sort(function (a, b) {
+          return String(b.first_seen || '').localeCompare(String(a.first_seen || ''));
+        });
+        showApp();
+      }
+    }
+  } catch (e) { /* ignore */ }
+
   goBtn.addEventListener('click', async function () {
     errEl.textContent = '';
     var pass = pwEl.value;
@@ -242,11 +264,8 @@ button:disabled{opacity:.6;cursor:wait}
       ALL.sort(function (a, b) {
         return String(b.first_seen || '').localeCompare(String(a.first_seen || ''));
       });
-      loginBox.hidden = true;
-      app.hidden = false;
-      pwEl.value = '';
-      fillStores();
-      render();
+      try { sessionStorage.setItem('sazProducts', JSON.stringify(ALL)); } catch (e) {}
+      showApp();
     } catch (e) {
       errEl.textContent = (String(e && e.message || e).indexOf('admin.enc') !== -1)
         ? 'admin.enc abhi publish nahi hui. Thodi der baad try karo.'
