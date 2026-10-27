@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Reseller Product — BrandScanner</title>
+<style>
+:root{--bg:#f6f6f4;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;--accent:#1f6f5c;--border:#e4e4df;--danger:#c0392b;--good:#1faa59}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1d1d1d;--text:#f0f0f0;--muted:#a0a0a0;--accent:#4cc3a4;--border:#2c2c2c;--danger:#ff6b5b;--good:#25c26a}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+.back{display:inline-block;padding:8px 0;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px}
+.big-image{aspect-ratio:1/1;background:var(--border);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;margin-top:8px}
+.big-image img{width:100%;height:100%;object-fit:cover;display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
+.name{font-size:20px;font-weight:700;line-height:1.3;word-break:break-word}
+.code{color:var(--muted);font-size:14px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px}
+.stat .label{color:var(--muted);font-size:12px}
+.stat .value{font-size:18px;font-weight:700;margin-top:4px}
+.stat.cost .value{color:var(--text)}
+.stat.margin .value{color:var(--accent)}
+.stat.sell .value{color:var(--text);font-size:22px}
+.stat.profit .value{color:var(--good);font-size:22px}
+.meta{margin-top:16px;font-size:14px;line-height:1.8}
+.meta .k{color:var(--muted);display:inline-block;min-width:120px}
+.meta .v{font-weight:600}
+.links{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
+.links a{background:var(--accent);color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px}
+.links a.store{background:var(--card);color:var(--accent);border:1px solid var(--accent)}
+.loading,.error{text-align:center;padding:40px 20px;color:var(--muted)}
+.error a{color:var(--accent);text-decoration:none;font-weight:600}
+.login{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:20px;display:flex;flex-direction:column;gap:10px;max-width:420px}
+.login input, .login button{font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+.login button{background:var(--accent);color:#fff;border:none;font-weight:600;cursor:pointer}
+.login button:disabled{opacity:.6;cursor:wait}
+.err{color:var(--danger);font-size:13px;min-height:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" class="back">← Back to reseller list</a>
+  <div id="loading" class="loading">Loading...</div>
+  <div id="error" class="error" hidden>Product nahi mila. <a href="index.html">Wapas jao</a></div>
+  <div id="login" class="login" hidden>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="go">Unlock</button>
+    <div class="err" id="err"></div>
+  </div>
+  <div id="content" hidden>
+    <div class="big-image" id="img"></div>
+    <div class="card">
+      <div class="name" id="name"></div>
+      <div class="code" id="code"></div>
+      <div class="grid">
+        <div class="stat cost"><div class="label">Cost</div><div class="value" id="cost">—</div></div>
+        <div class="stat margin"><div class="label">Margin</div><div class="value" id="margin">—</div></div>
+        <div class="stat sell"><div class="label">Sell Price</div><div class="value" id="sell">—</div></div>
+        <div class="stat profit"><div class="label">Profit</div><div class="value" id="profit">—</div></div>
+      </div>
+      <div class="meta">
+        <div><span class="k">Store</span><span class="v" id="store">—</span></div>
+        <div><span class="k">Store host</span><span class="v" id="host">—</span></div>
+        <div><span class="k">Added</span><span class="v" id="added">—</span></div>
+      </div>
+      <div class="links" id="links"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var code = new URLSearchParams(location.search).get('code');
+  var loading = document.getElementById('loading');
+  var error = document.getElementById('error');
+  var login = document.getElementById('login');
+  var content = document.getElementById('content');
+  var pwEl = document.getElementById('pw');
+  var goBtn = document.getElementById('go');
+  var errEl = document.getElementById('err');
+
+  if (!code) { showError(); return; }
+
+  function showError(){ loading.hidden = true; error.hidden = false; }
+
+  function fmt(n){ var x = Number(n); return isFinite(x) ? '\u20B9' + x.toLocaleString('en-IN') : '—'; }
+
+  function resolveImg(p){ if (!p) return ''; if (/^https?:\/\//i.test(p)) return p; return '../' + p.replace(/^\.?\//,''); }
+
+  function findIn(list){ for (var i=0;i<list.length;i++){ if (list[i] && list[i].code === code) return list[i]; } return null; }
+
+  function render(p){
+    loading.hidden = true;
+    login.hidden = true;
+    content.hidden = false;
+    document.title = (p.name||'Product') + ' — Reseller';
+
+    var imgEl = document.getElementById('img');
+    var src = resolveImg(p.image);
+    if (src) {
+      var img = document.createElement('img');
+      img.alt = p.name || '';
+      img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); imgEl.textContent = 'Photo coming soon'; };
+      img.src = src;
+      imgEl.appendChild(img);
+    } else { imgEl.textContent = 'Photo coming soon'; }
+
+    document.getElementById('name').textContent = p.name || '';
+    document.getElementById('code').textContent = 'Code: ' + (p.code||'');
+    document.getElementById('cost').textContent = fmt(p.cost);
+    document.getElementById('margin').textContent = fmt(p.margin);
+    document.getElementById('sell').textContent = fmt(p.price);
+    document.getElementById('profit').textContent = fmt(p.margin);
+    document.getElementById('store').textContent = p.store_name || '—';
+    document.getElementById('host').textContent = p.store_host || '—';
+    var added = p.first_seen || '';
+    if (added) { try { added = new Date(added).toLocaleString('en-IN'); } catch(e){} }
+    document.getElementById('added').textContent = added || '—';
+
+    var links = document.getElementById('links');
+    links.innerHTML = '';
+    if (p.store_url) {
+      var a = document.createElement('a');
+      a.className = 'store'; a.href = p.store_url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.textContent = 'Store kholo';
+      links.appendChild(a);
+    }
+    if (p.product_url) {
+      var b = document.createElement('a');
+      b.href = p.product_url; b.target = '_blank'; b.rel = 'noopener noreferrer';
+      b.textContent = 'Source product page';
+      links.appendChild(b);
+    }
+  }
+
+  function b64(s){ var bin = atob(s); var u = new Uint8Array(bin.length); for (var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+
+  async function decryptEnc(enc, pass){
+    var salt = b64(enc.salt), iv = b64(enc.iv), ct = b64(enc.ct);
+    var iter = enc.iter || 200000;
+    var baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), {name:'PBKDF2'}, false, ['deriveKey']);
+    var key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:salt, iterations:iter, hash:'SHA-256'}, baseKey, {name:'AES-GCM', length:256}, false, ['decrypt']);
+    var pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:iv}, key, ct);
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  // Try sessionStorage first
+  try {
+    var cached = sessionStorage.getItem('sazProducts');
+    if (cached) {
+      var list = JSON.parse(cached);
+      var p = findIn(list);
+      if (p) { render(p); return; }
+    }
+  } catch(e) {}
+
+  // Need password
+  loading.hidden = true;
+  login.hidden = false;
+
+  goBtn.addEventListener('click', async function(){
+    errEl.textContent = '';
+    var pass = pwEl.value;
+    if (!pass) { errEl.textContent = 'Password daalo.'; return; }
+    goBtn.disabled = true; goBtn.textContent = 'Unlocking...';
+    try {
+      var r = await fetch('../admin.enc?v=' + Date.now(), {cache:'no-store'});
+      if (!r.ok) throw new Error('admin.enc HTTP ' + r.status);
+      var enc = await r.json();
+      var data = await decryptEnc(enc, pass);
+      var list = (data && Array.isArray(data.products)) ? data.products : [];
+      try { sessionStorage.setItem('sazProducts', JSON.stringify(list)); } catch(e){}
+      var p = findIn(list);
+      if (!p) { showError(); return; }
+      render(p);
+    } catch(e) {
+      errEl.textContent = 'Galat password ya file corrupt.';
+    } finally {
+      goBtn.disabled = false; goBtn.textContent = 'Unlock';
+    }
+  });
+})();
+</script>
+</body>
+</html>
