@@ -11,8 +11,19 @@
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
 .wrap{max-width:700px;margin:0 auto;padding:16px 16px 40px}
 .back{display:inline-block;padding:8px 0;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px}
-.big-image{aspect-ratio:1/1;background:var(--border);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;margin-top:8px}
-.big-image img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:14px;background:var(--border);margin-top:8px}
+.gallery-track{display:flex;height:100%;transition:transform .3s ease}
+.gallery-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;display:block}
+.gallery-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.gal-prev{left:10px}.gal-next{right:10px}
+.gal-nav[hidden]{display:none}
+.dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.dots[hidden]{display:none}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer;transition:background .2s}
+.dot.active{background:#fff}
+.video-wrap{margin-top:14px;border-radius:14px;overflow:hidden;background:var(--border)}
+.video-wrap video{width:100%;display:block}
 .info{margin-top:16px}
 .name{font-size:20px;font-weight:700;line-height:1.3;word-break:break-word}
 .code{color:var(--muted);font-size:14px;margin-top:6px}
@@ -20,6 +31,9 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 .order{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:20px}
 .order:active{opacity:.85}
 .note{color:var(--muted);font-size:13px;margin-top:12px;text-align:center}
+.desc-box{margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.desc-box h3{margin:0 0 8px;font-size:16px}
+.desc-box p{margin:0;font-size:14px;line-height:1.55;white-space:pre-wrap;color:var(--text)}
 .loading,.error{text-align:center;padding:40px 20px;color:var(--muted)}
 .error a{color:var(--accent);text-decoration:none;font-weight:600}
 </style>
@@ -30,13 +44,23 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
   <div id="loading" class="loading">Loading...</div>
   <div id="error" class="error" hidden>Product nahi mila. <a href="index.html">Wapas jao</a></div>
   <div id="content" hidden>
-    <div class="big-image" id="img"></div>
+    <div class="gallery">
+      <div class="gallery-track" id="track"></div>
+      <button class="gal-nav gal-prev" id="galPrev" aria-label="Previous photo">‹</button>
+      <button class="gal-nav gal-next" id="galNext" aria-label="Next photo">›</button>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="video-wrap" id="videoWrap" hidden></div>
     <div class="info">
       <div class="name" id="name"></div>
       <div class="code" id="code"></div>
       <div class="price" id="price"></div>
       <a class="order" id="order">WhatsApp par order karo</a>
       <div class="note">Order confirm karne ke liye WhatsApp par message karo</div>
+    </div>
+    <div class="desc-box" id="descBox" hidden>
+      <h3>Details</h3>
+      <p id="descText"></p>
     </div>
   </div>
 </div>
@@ -56,50 +80,128 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     .then(function(data){
       var list = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
       var p = null;
-      for (var i = 0; i < list.length; i++) {
-        if (list[i] && list[i].code === code) { p = list[i]; break; }
-      }
+      for (var i = 0; i < list.length; i++) { if (list[i] && list[i].code === code) { p = list[i]; break; } }
       if (!p) { showError(); return; }
       render(p);
     })
     .catch(function(){ showError(); });
 
-  function showError() {
-    loading.hidden = true;
-    error.hidden = false;
+  function showError(){ loading.hidden = true; error.hidden = false; }
+
+  function fmt(n){ var x = Number(n); return isFinite(x) ? '\u20B9' + x.toLocaleString('en-IN') : ''; }
+
+  function resolveImg(p){ if (!p) return ''; if (/^https?:\/\//i.test(p)) return p; return p; }
+
+  function galleryList(p){
+    var arr = [];
+    if (Array.isArray(p.images)) {
+      for (var i=0;i<p.images.length;i++){ if (p.images[i]) arr.push(p.images[i]); }
+    }
+    if (!arr.length && p.image) arr.push(p.image);
+    return arr;
   }
 
-  function fmt(n) {
-    var x = Number(n);
-    if (!isFinite(x)) return '';
-    return '\u20B9' + x.toLocaleString('en-IN');
-  }
-
-  function render(p) {
-    document.title = p.name + ' - BrandScanner';
+  function render(p){
+    document.title = (p.name || 'Product') + ' - BrandScanner';
     loading.hidden = true;
     content.hidden = false;
 
-    var imgEl = document.getElementById('img');
-    if (p.image) {
-      var img = document.createElement('img');
-      img.alt = p.name || '';
-      img.loading = 'eager';
-      img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); imgEl.textContent = 'Photo coming soon'; };
-      img.src = p.image;
-      imgEl.appendChild(img);
-    } else {
-      imgEl.textContent = 'Photo coming soon';
+    var images = galleryList(p);
+    buildGallery(images, p.name);
+
+    if (p.video) {
+      var vid = String(p.video).trim();
+      var url = /^https?:\/\//i.test(vid) ? vid : ('https://cdn.cartpe.in/' + vid);
+      var vw = document.getElementById('videoWrap');
+      var v = document.createElement('video');
+      v.controls = true;
+      v.preload = 'metadata';
+      v.src = url;
+      v.onerror = function(){ vw.hidden = true; vw.innerHTML = ''; };
+      vw.innerHTML = '';
+      vw.appendChild(v);
+      vw.hidden = false;
     }
 
     document.getElementById('name').textContent = p.name || '';
     document.getElementById('code').textContent = 'Code: ' + (p.code || '');
     document.getElementById('price').textContent = fmt(p.price);
 
-    var text = 'Hi BrandScanner, mujhe ye watch order karni hai:\n' +
-      p.name + '\nCode: ' + p.code + '\nPrice: ' + fmt(p.price);
-    var url = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text);
-    document.getElementById('order').href = url;
+    var text = 'Hi BrandScanner, mujhe ye watch order karni hai:\n' + p.name + '\nCode: ' + p.code + '\nPrice: ' + fmt(p.price);
+    document.getElementById('order').href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text);
+
+    if (p.description && String(p.description).trim()) {
+      document.getElementById('descText').textContent = String(p.description).trim();
+      document.getElementById('descBox').hidden = false;
+    }
+  }
+
+  var current = 0;
+  var total = 0;
+
+  function buildGallery(images, altName){
+    var track = document.getElementById('track');
+    var dots = document.getElementById('dots');
+    var prev = document.getElementById('galPrev');
+    var next = document.getElementById('galNext');
+    track.innerHTML = '';
+    dots.innerHTML = '';
+    current = 0;
+    total = images.length;
+
+    if (!total) {
+      var em = document.createElement('div');
+      em.className = 'gallery-empty';
+      em.textContent = 'Photo coming soon';
+      track.appendChild(em);
+      prev.hidden = true; next.hidden = true; dots.hidden = true;
+      return;
+    }
+
+    images.forEach(function(src, i){
+      var img = document.createElement('img');
+      img.loading = (i === 0 ? 'eager' : 'lazy');
+      img.alt = altName || '';
+      img.onerror = function(){
+        if (img.parentNode) img.parentNode.removeChild(img);
+        var ph = document.createElement('div');
+        ph.className = 'gallery-empty';
+        ph.textContent = 'No image';
+        img.parentNode && img.parentNode.appendChild(ph);
+      };
+      img.src = resolveImg(src);
+      track.appendChild(img);
+
+      var dot = document.createElement('span');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.onclick = function(){ goTo(i); };
+      dots.appendChild(dot);
+    });
+
+    if (total <= 1) {
+      prev.hidden = true; next.hidden = true; dots.hidden = true;
+    } else {
+      prev.hidden = false; next.hidden = false; dots.hidden = false;
+      prev.onclick = function(){ goTo(current - 1); };
+      next.onclick = function(){ goTo(current + 1); };
+    }
+
+    var startX = null;
+    track.addEventListener('touchstart', function(e){ if (e.touches.length) startX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend', function(e){
+      if (startX === null) return;
+      var dx = (e.changedTouches[0].clientX - startX);
+      if (Math.abs(dx) > 40) { dx < 0 ? goTo(current + 1) : goTo(current - 1); }
+      startX = null;
+    }, {passive:true});
+  }
+
+  function goTo(i){
+    if (total <= 1) return;
+    current = ((i % total) + total) % total;
+    document.getElementById('track').style.transform = 'translateX(-' + (current * 100) + '%)';
+    var allDots = document.querySelectorAll('.dot');
+    for (var k = 0; k < allDots.length; k++) allDots[k].classList.toggle('active', k === current);
   }
 })();
 </script>
