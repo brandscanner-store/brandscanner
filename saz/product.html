@@ -89,6 +89,17 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
 
   function resolveImg(p){ if (!p) return ''; if (/^https?:\/\//i.test(p)) return p; return '../' + p.replace(/^\.?\//,''); }
 
+  // Fresh URL builder - never trust stale product_url
+  function buildProductUrl(p) {
+    var host = (p.store_host || '').trim();
+    var slug = (p.slug || '').trim();
+    if (!host) return '';
+    if (p.product_url && p.product_url.indexOf(host) !== -1) return p.product_url;
+    if (!slug) return '';
+    if (p.platform === 'jdwebconnect') return 'https://' + host + '/product/' + slug;
+    return 'https://' + host + '/product-detail/' + slug;
+  }
+
   function findIn(list){ for (var i=0;i<list.length;i++){ if (list[i] && list[i].code === code) return list[i]; } return null; }
 
   function render(p){
@@ -127,9 +138,10 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
       a.textContent = 'Store kholo';
       links.appendChild(a);
     }
-    if (p.product_url) {
+    var correctUrl = buildProductUrl(p);
+    if (correctUrl) {
       var b = document.createElement('a');
-      b.href = p.product_url; b.target = '_blank'; b.rel = 'noopener noreferrer';
+      b.href = correctUrl; b.target = '_blank'; b.rel = 'noopener noreferrer';
       b.textContent = 'Source product page';
       links.appendChild(b);
     }
@@ -146,7 +158,6 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     return JSON.parse(new TextDecoder().decode(pt));
   }
 
-  // Try sessionStorage first
   try {
     var cached = sessionStorage.getItem('sazProducts');
     if (cached) {
@@ -156,7 +167,6 @@ body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;b
     }
   } catch(e) {}
 
-  // Need password
   loading.hidden = true;
   login.hidden = false;
 
