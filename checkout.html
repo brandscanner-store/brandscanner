@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout - BrandScanner</title>
+<style>
+:root{--bg:#f6f6f4;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;--accent:#1f6f5c;--wa:#1faa59;--border:#e4e4df;--danger:#c0392b}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1d1d1d;--text:#f0f0f0;--muted:#a0a0a0;--accent:#4cc3a4;--wa:#25c26a;--border:#2c2c2c;--danger:#ff6b5b}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:600px;margin:0 auto;padding:16px 16px 40px}
+.back{display:inline-block;padding:8px 0;color:var(--accent);text-decoration:none;font-weight:600;font-size:15px}
+h2{margin:16px 0 8px;font-size:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.product-row{display:flex;gap:10px;align-items:center}
+.thumb{flex:0 0 64px;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.p-name{font-size:14px;font-weight:600;line-height:1.3}
+.p-code{color:var(--muted);font-size:12px;margin-top:2px}
+.p-price{color:var(--accent);font-weight:700;font-size:18px;margin-top:4px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:600}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:15px;font-family:inherit}
+textarea{resize:vertical;min-height:60px}
+button{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:14px}
+button:active{opacity:.85}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:var(--danger);font-size:13px;margin-top:8px;min-height:18px}
+.summary{margin-top:16px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.summary-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+.summary-row.total{font-weight:700;font-size:16px;padding-top:8px;border-top:1px solid var(--border);margin-top:6px;color:var(--accent)}
+.qr-box{text-align:center;margin-top:16px;padding:16px;background:#fff;border-radius:14px;border:2px dashed var(--accent)}
+#qrcode{display:inline-block;padding:8px}
+#qrcode img,#qrcode canvas{display:block}
+.qr-upi{font-family:monospace;font-size:13px;color:var(--muted);margin-top:8px;word-break:break-all}
+.qr-amount{font-size:22px;font-weight:800;color:var(--accent);margin-top:4px}
+.wa-btn{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:14px}
+.wa-btn:active{opacity:.85}
+.note{color:var(--muted);font-size:12px;line-height:1.5;margin-top:8px;text-align:center}
+.step{font-size:13px;color:var(--muted);margin-top:6px}
+.loading,.error{text-align:center;padding:40px 20px;color:var(--muted)}
+.error a{color:var(--accent);text-decoration:none;font-weight:600}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" class="back">← Back to products</a>
+
+  <div id="loading" class="loading">Loading...</div>
+  <div id="notFound" class="error hidden">Product nahi mila. <a href="index.html">Wapas jao</a></div>
+
+  <div id="step1" class="hidden">
+    <h2>Order karein</h2>
+    <div class="card">
+      <div class="product-row">
+        <div class="thumb" id="pthumb"></div>
+        <div style="flex:1">
+          <div class="p-name" id="pname"></div>
+          <div class="p-code" id="pcode"></div>
+          <div class="p-price" id="pprice"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="f-name">Aapka naam</label>
+      <input id="f-name" type="text" placeholder="Full name" autocomplete="name">
+      <label for="f-phone">Mobile number (WhatsApp)</label>
+      <input id="f-phone" type="tel" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="tel">
+      <label for="f-address">Delivery address</label>
+      <textarea id="f-address" placeholder="House no, street, area, city, pincode" autocomplete="street-address"></textarea>
+      <label for="f-landmark">Landmark (optional)</label>
+      <input id="f-landmark" type="text" placeholder="Near by building / area">
+      <div class="err" id="formErr"></div>
+      <button id="submitBtn">Proceed to ₹200 Advance</button>
+    </div>
+  </div>
+
+  <div id="step2" class="hidden">
+    <h2>₹200 Advance pay karein</h2>
+
+    <div class="qr-box">
+      <div class="qr-amount">₹200</div>
+      <div id="qrcode"></div>
+      <div class="qr-upi" id="upiText"></div>
+      <div class="step">PhonePe, GPay, Paytm, ya kisi bhi UPI app se scan karein</div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-row"><span>Product</span><span id="sProduct"></span></div>
+      <div class="summary-row"><span>Total price</span><span id="sTotal"></span></div>
+      <div class="summary-row"><span>Advance (UPI)</span><span style="color:var(--accent);font-weight:700">₹200</span></div>
+      <div class="summary-row total"><span>Baaki (COD)</span><span id="sCod"></span></div>
+    </div>
+
+    <div class="note">
+      ⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot ke saath order details bhejna zaroori hai.
+    </div>
+
+    <a id="waBtn" class="wa-btn" target="_blank" rel="noopener">WhatsApp par order confirm karein</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  // ============ SETTINGS — EDIT THESE ============
+  var UPI_ID = 'YOUR_UPI_ID@paytm';
+  var UPI_NAME = 'BrandScanner';
+  var ADMIN_PHONE = '917990643295';
+  var ADVANCE_AMOUNT = 200;
+  // ===============================================
+
+  var params = new URLSearchParams(location.search);
+  var code = params.get('code');
+  var product = null;
+
+  var loading = document.getElementById('loading');
+  var notFound = document.getElementById('notFound');
+  var step1 = document.getElementById('step1');
+  var step2 = document.getElementById('step2');
+
+  if (!code) { showNotFound(); return; }
+
+  fetch('catalog.json?v=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+    .then(function (data) {
+      var list = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && list[i].code === code) { product = list[i]; break; }
+      }
+      if (!product) { showNotFound(); return; }
+      renderProduct();
+    })
+    .catch(function () { showNotFound(); });
+
+  function showNotFound() {
+    loading.classList.add('hidden');
+    notFound.classList.remove('hidden');
+  }
+
+  function fmt(n) { return '\u20B9' + Number(n).toLocaleString('en-IN'); }
+
+  function renderProduct() {
+    loading.classList.add('hidden');
+    step1.classList.remove('hidden');
+
+    var thumb = document.getElementById('pthumb');
+    if (product.image) {
+      var img = document.createElement('img');
+      img.src = product.image;
+      img.alt = product.name;
+      img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); thumb.textContent = 'No img'; };
+      thumb.appendChild(img);
+    } else {
+      thumb.textContent = 'No img';
+    }
+
+    document.getElementById('pname').textContent = product.name;
+    document.getElementById('pcode').textContent = 'Code: ' + product.code;
+    document.getElementById('pprice').textContent = fmt(product.price);
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    var name = document.getElementById('f-name').value.trim();
+    var phone = document.getElementById('f-phone').value.trim();
+    var address = document.getElementById('f-address').value.trim();
+    var landmark = document.getElementById('f-landmark').value.trim();
+    var errEl = document.getElementById('formErr');
+    errEl.textContent = '';
+
+    if (name.length < 2) { errEl.textContent = 'Naam daalein.'; return; }
+    if (!/^[6-9]\d{9}$/.test(phone)) { errEl.textContent = 'Sahi 10-digit mobile number daalein (6-9 se shuru).'; return; }
+    if (address.length < 10) { errEl.textContent = 'Poora delivery address daalein (kam se kam 10 characters).'; return; }
+
+    showQrPage({ name: name, phone: phone, address: address, landmark: landmark });
+  });
+
+  function showQrPage(customer) {
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+
+    var total = Number(product.price);
+    var cod = total - ADVANCE_AMOUNT;
+    if (cod < 0) cod = 0;
+
+    document.getElementById('sProduct').textContent = product.name;
+    document.getElementById('sTotal').textContent = fmt(total);
+    document.getElementById('sCod').textContent = fmt(cod);
+
+    // Build UPI deep link
+    var note = 'BS-' + product.code + ' Advance';
+    var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) +
+                  '&pn=' + encodeURIComponent(UPI_NAME) +
+                  '&am=' + ADVANCE_AMOUNT +
+                  '&cu=INR' +
+                  '&tn=' + encodeURIComponent(note);
+
+    // Generate QR locally (no third-party server)
+    var qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    try {
+      new QRCode(qrContainer, {
+        text: upiLink,
+        width: 240,
+        height: 240,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch (e) {
+      qrContainer.textContent = 'QR generate nahi hua. UPI ID manually use karein.';
+    }
+
+    document.getElementById('upiText').textContent = UPI_ID;
+
+    // Build WhatsApp message with all details
+    var msg = 'Hi BrandScanner, order karna hai:\n\n';
+    msg += '📦 *' + product.name + '*\n';
+    msg += 'Code: ' + product.code + '\n';
+    msg += 'Total: ' + fmt(total) + '\n';
+    msg += 'Advance paid: ₹' + ADVANCE_AMOUNT + ' (UPI)\n';
+    msg += 'COD balance: ' + fmt(cod) + '\n\n';
+    msg += '👤 ' + customer.name + '\n';
+    msg += '📱 ' + customer.phone + '\n';
+    msg += '🏠 ' + customer.address;
+    if (customer.landmark) msg += '\nLandmark: ' + customer.landmark;
+    msg += '\n\n_Screenshot attach kiya hai — advance payment ka._';
+
+    var waUrl = 'https://wa.me/' + ADMIN_PHONE + '?text=' + encodeURIComponent(msg);
+    document.getElementById('waBtn').href = waUrl;
+  }
+})();
+</script>
+</body>
+</html>
