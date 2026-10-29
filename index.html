@@ -17,10 +17,9 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans
 .header{background:var(--card);border-bottom:1px solid var(--border);padding:16px}
 .header-inner{max-width:1200px;margin:0 auto}
 .brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Georgia,serif;font-size:18px;font-weight:700;letter-spacing:-1px}
-.logo-text{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;letter-spacing:.5px;color:var(--text)}
-.logo-text span{color:var(--gold)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-img{height:42px;width:auto;display:block;border-radius:8px;object-fit:contain}
+@media (prefers-color-scheme:dark){.logo-img{background:#fff;padding:4px}}
 .header-nav{display:flex;gap:16px;align-items:center}
 .header-nav a{color:var(--text);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .header-nav a:hover{color:var(--gold)}
@@ -101,9 +100,8 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans
 <header class="header">
   <div class="header-inner">
     <div class="brand-row">
-      <a href="index.html" class="logo" style="text-decoration:none">
-        <div class="logo-mark">B</div>
-        <div class="logo-text">Brand<span>Scanner</span></div>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="BrandScanner" class="logo-img">
       </a>
       <nav class="header-nav">
         <a href="https://wa.me/917990643295" target="_blank" rel="noopener">WhatsApp</a>
@@ -174,7 +172,6 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans
 </footer>
 
 <a class="wa-float" href="https://wa.me/917990643295" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
-
 <script>
 (function(){
   var WHATSAPP = '917990643295';
