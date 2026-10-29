@@ -1,42 +1,100 @@
 (function() {
   var style = document.createElement('style');
   style.innerHTML = `
-    .bs-chat-toggle { position: fixed; bottom: 85px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: #0a1f44; color: #b3ff00; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(10,31,68,.4); z-index: 999; transition: transform 0.2s; border: 2px solid #b3ff00; }
+    /* Robot Toggle Button */
+    .bs-chat-toggle { 
+      position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; 
+      border-radius: 50%; background: #0a1f44; color: #b3ff00; 
+      display: flex; align-items: center; justify-content: center; 
+      box-shadow: 0 4px 20px rgba(10,31,68,.4); z-index: 999; 
+      cursor: pointer; transition: transform 0.2s; border: 2px solid #b3ff00; 
+    }
+    .bs-chat-toggle svg { width: 32px; height: 32px; fill: currentColor; }
     .bs-chat-toggle:active { transform: scale(0.92); }
-    .bs-chat-window { position: fixed; bottom: 150px; right: 20px; width: 340px; max-width: calc(100vw - 40px); height: 500px; max-height: calc(100vh - 180px); background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e5e5e0; font-family: 'Inter', system-ui, sans-serif; }
-    .bs-chat-window.open { display: flex; }
-    .bs-chat-header { background: #0a1f44; color: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
-    .bs-chat-header h3 { margin: 0; font-size: 15px; font-weight: 700; color: #b3ff00; }
+    
+    /* Wave Animation */
+    .bs-chat-toggle.wave { animation: wave-anim 0.8s ease-in-out 2; }
+    @keyframes wave-anim {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-15deg); }
+      50% { transform: rotate(10deg); }
+      75% { transform: rotate(-5deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* Tooltip */
+    .bs-chat-tooltip {
+      position: fixed; bottom: 100px; right: 90px; background: #fff; 
+      color: #0a1f44; padding: 8px 14px; border-radius: 12px; 
+      font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,.1); 
+      z-index: 999; border: 1px solid #e5e5e0; opacity: 0; 
+      transform: translateX(10px); transition: all 0.3s; pointer-events: none;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .bs-chat-tooltip.show { opacity: 1; transform: translateX(0); }
+    .bs-chat-tooltip::after {
+      content: ''; position: absolute; right: -6px; top: 50%; 
+      transform: translateY(-50%); border-width: 6px 0 6px 6px; 
+      border-style: solid; border-color: transparent transparent transparent #fff;
+    }
+
+    /* Chat Window */
+    .bs-chat-window { 
+      position: fixed; bottom: 155px; right: 20px; width: 350px; 
+      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 180px); 
+      background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+      z-index: 1000; display: none; flex-direction: column; overflow: hidden; 
+      border: 1px solid #e5e5e0; font-family: 'Inter', system-ui, sans-serif; 
+    }
+    .bs-chat-window.open { display: flex; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .bs-chat-header { background: #0a1f44; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; display: flex; align-items: center; gap: 8px; }
     .bs-chat-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; }
-    .bs-chat-body { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #faf9f6; }
-    .bs-msg { padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; max-width: 85%; word-wrap: break-word; }
-    .bs-msg-bot { background: #fff; color: #0a1f44; border: 1px solid #e5e5e0; border-bottom-left-radius: 2px; align-self: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .bs-msg-user { background: #0a1f44; color: #fff; border-bottom-right-radius: 2px; align-self: flex-end; }
-    .bs-btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%; }
-    .bs-btn { background: #fff; border: 1.5px solid #0a1f44; color: #0a1f44; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Chat Body & Messages */
+    .bs-chat-body { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #faf9f6; scroll-behavior: smooth; }
+    .bs-msg { padding: 12px 16px; border-radius: 16px; font-size: 13.5px; line-height: 1.5; max-width: 85%; word-wrap: break-word; position: relative; }
+    
+    .bs-msg-bot { background: #fff; color: #0a1f44; border: 1px solid #e5e5e0; border-bottom-left-radius: 4px; align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .bs-msg-user { background: #0a1f44; color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+
+    /* Typing Indicator */
+    .typing-indicator { display: flex; gap: 4px; padding: 14px 18px; align-items: center; }
+    .typing-indicator span { width: 6px; height: 6px; background-color: #6b7280; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite ease-in-out both; }
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    /* Buttons */
+    .bs-btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; width: 100%; }
+    .bs-btn { background: #fff; border: 1.5px solid #0a1f44; color: #0a1f44; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
     .bs-btn:hover { background: #f0f4ff; }
     .bs-btn::after { content: '›'; font-size: 18px; color: #b3ff00; -webkit-text-stroke: 1px #0a1f44; }
+
+    /* Search Input */
     .bs-search-wrap { padding: 12px 16px; background: #fff; border-top: 1px solid #e5e5e0; display: flex; gap: 8px; }
     .bs-search-wrap input { flex: 1; padding: 10px 14px; border: 1.5px solid #e5e5e0; border-radius: 20px; font-size: 13px; outline: none; transition: border-color 0.2s; }
     .bs-search-wrap input:focus { border-color: #0a1f44; }
     .bs-search-wrap button { background: #0a1f44; color: #b3ff00; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .bs-search-wrap button:active { transform: scale(0.92); }
   `;
   document.head.appendChild(style);
 
+  // Robot SVG Icon
+  var robotSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4v-7a4 4 0 0 1 4-4h1V5.73A2 2 0 0 1 12 2ZM9.5 12a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM8 17v1h8v-1H8Z"/></svg>`;
+
   var chatHTML = `
-    <div class="bs-chat-toggle" id="bsChatToggle">💬</div>
+    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask me! 👋</div>
+    <div class="bs-chat-toggle" id="bsChatToggle">${robotSVG}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        <h3>BrandScanner Support</h3>
+        <h3>🤖 Support Bot</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
-      <div class="bs-chat-body" id="bsChatBody">
-        <div class="bs-msg bs-msg-bot">Hi there! 👋 Welcome to BrandScanner. How can we help you today?</div>
-        <div class="bs-btn-group" id="bsChatOptions"></div>
-      </div>
+      <div class="bs-chat-body" id="bsChatBody"></div>
       <div class="bs-search-wrap">
-        <input type="text" id="bsChatSearchInput" placeholder="Type your question...">
+        <input type="text" id="bsChatSearchInput" placeholder="Type a keyword (e.g., advance, box)...">
         <button id="bsChatSearchBtn">🔍</button>
       </div>
     </div>
@@ -49,53 +107,79 @@
   var window_ = document.getElementById('bsChatWindow');
   var closeBtn = document.getElementById('bsChatClose');
   var body = document.getElementById('bsChatBody');
-  var optionsDiv = document.getElementById('bsChatOptions');
   var searchInput = document.getElementById('bsChatSearchInput');
   var searchBtn = document.getElementById('bsChatSearchBtn');
+  var tooltip = document.getElementById('bsChatTooltip');
+
+  // Wave & Tooltip on load
+  setTimeout(function() {
+    toggle.classList.add('wave');
+    tooltip.classList.add('show');
+    setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
+    setTimeout(function(){ toggle.classList.remove('wave'); }, 1600);
+  }, 1000);
 
   var chatData = [
+    { icon: '📦', label: 'Quality & Video Call', qs: [
+      { q: 'Can I see the watch before you ship it?', a: 'Yes! We offer "Video Call Packing" on request. You can connect with us on WhatsApp video call, and we will show you your watch live, inspect it for any defects, and pack it in front of you.' },
+      { q: 'Are the watches exactly as shown in the photos?', a: 'Yes, we use real photos of the actual watches. What you see is exactly what you will receive.' },
+      { q: 'What if the watch gets damaged during delivery?', a: 'We pack the watches very securely. However, if you receive a damaged item, please make a continuous unboxing video and contact us on WhatsApp immediately. We will arrange a replacement.' }
+    ]},
+    { icon: '💵', label: 'Payment & Advance (COD)', qs: [
+      { q: 'Is Cash on Delivery (COD) available?', a: 'Yes, COD is available on almost all serviceable pincodes across India. You only need to pay a small token advance to confirm the order.' },
+      { q: 'Why is the advance amount required?', a: 'The advance (₹200+) ensures that we only process genuine orders and avoid fake bookings. This amount is fully adjusted in your final bill. You pay the rest as COD.' },
+      { q: 'Can I pay the advance using UPI?', a: 'Yes, we accept all UPI apps (GPay, PhonePe, Paytm) via our secure QR code.' },
+      { q: 'What if I cancel my order after paying the advance?', a: 'If you cancel before dispatch, the advance is non-refundable as it covers the booking and verification costs. Once shipped, cancellation is not possible.' }
+    ]},
     { icon: '🚚', label: 'Delivery & Shipping', qs: [
-      { q: 'How long does delivery take?', a: 'Delivery usually takes 4-5 business days across India. For remote areas, it may take up to 7 days.' },
-      { q: 'Is shipping free?', a: 'Yes, we provide 100% Free Shipping Pan-India. No extra charges.' },
-      { q: 'Can I track my order?', a: 'Yes! Once your order is dispatched, we will share the tracking link with you on WhatsApp.' },
-      { q: 'Do you deliver to my pincode?', a: 'We deliver to almost all serviceable pincodes across India. You can check by entering your pincode on the checkout page.' }
+      { q: 'How many days does delivery take?', a: 'Standard delivery takes 4-5 business days. For remote areas, it might take up to 7 days.' },
+      { q: 'Is shipping free?', a: 'Absolutely! We provide 100% Free Shipping Pan-India.' },
+      { q: 'How will I track my order?', a: 'Once your order is dispatched, we will send you a tracking link directly on your WhatsApp number.' }
     ]},
-    { icon: '💵', label: 'Payment & COD', qs: [
-      { q: 'Is Cash on Delivery available?', a: 'Yes! You can pay the remaining amount via Cash on Delivery. We only take a small advance to confirm the order.' },
-      { q: 'Why do I need to pay advance?', a: 'The token advance ensures that fake orders are avoided and we can book your delivery smoothly. It is fully adjusted in your total bill.' },
-      { q: 'What is the advance amount?', a: 'For orders under ₹5000: 1 watch = ₹200, 2 watches = ₹300. For orders ₹5000-₹10000: Double advance. Above ₹10000: 10% advance.' },
-      { q: 'Can I pay via UPI at delivery?', a: 'Yes, our delivery partners accept both Cash and UPI payments at the time of delivery.' }
+    { icon: '🔄', label: 'Exchange & Returns', qs: [
+      { q: 'Can I return the watch if I do not like it?', a: 'We do not offer returns for "change of mind". However, if the product is damaged or defective, we offer an exchange.' },
+      { q: 'What is the exchange process?', a: 'You must record a continuous unboxing video. Contact us within 3 days of delivery on WhatsApp (+91 79906 43295). If approved, you will need to courier the watch to our office address.' },
+      { q: 'Can I exchange for a different design?', a: 'Exchanges are only for the same model in case of defects/damage.' }
     ]},
-    { icon: '🛡️', label: 'Quality & Authenticity', qs: [
-      { q: 'Are the watches original?', a: 'We deal in premium quality inspired designs. We are an independent reseller and not affiliated with any luxury brand.' },
-      { q: 'What is Video Call Packing?', a: 'On request, we can call you on WhatsApp and show your watch live before packing it. This ensures complete transparency.' },
-      { q: 'How is the quality checked?', a: 'Every piece undergoes a strict quality check for any defects before dispatch. We ensure you receive a perfect product.' },
-      { q: 'Do watches come with a warranty?', a: 'Yes, we provide a 6-month warranty against manufacturing defects. Physical damage or water damage is not covered.' }
+    { icon: '⌚', label: 'Watch Care & Info', qs: [
+      { q: 'Is the watch waterproof?', a: 'Our watches are 3ATM water-resistant. They can handle splashes and rain, but please do not use them for swimming, showering, or diving.' },
+      { q: 'Is the movement automatic or quartz?', a: 'We have both options. You can check the product title/description for the specific movement, or contact us on WhatsApp before ordering.' },
+      { q: 'Can I adjust the strap size?', a: 'Yes, most of our metal watches come with a sizing tool. If you need help, any local watch shop can adjust the size in 2 minutes, or you can ask us to adjust it before shipping.' }
     ]},
-    { icon: '🔄', label: 'Exchange Policy', qs: [
-      { q: 'What is your exchange policy?', a: 'We offer exchanges for damaged/defective items. A continuous unboxing video is mandatory to claim an exchange.' },
-      { q: 'How do I raise an exchange request?', a: 'Raise a request within 3 days of delivery on WhatsApp (+91 79906 43295) with your unboxing video and order details.' },
-      { q: 'Who pays for return shipping?', a: 'For defective items, we cover the return shipping. For all other cases, the customer bears the shipping cost.' }
+    { icon: '📦', label: 'Ordering & Packaging', qs: [
+      { q: 'How do I place an order?', a: 'Click on "Buy Now", fill in your address, scan the UPI QR for the advance, and click "Confirm on WhatsApp" to place your order.' },
+      { q: 'Will I get the original brand box with the watch?', a: 'The watch comes in a secure, plain safety box. If you want the original brand box, you can add it separately. Please contact us on WhatsApp for pricing, as original box prices vary by brand.' },
+      { q: 'Do I get a bill/invoice with the order?', a: 'Yes, we provide a standard invoice with your order for your records.' }
     ]},
-    { icon: '📦', label: 'Order Issues', qs: [
-      { q: 'How do I cancel my order?', a: 'You can cancel your order before dispatch by contacting us on WhatsApp. Once shipped, cancellation may not be possible.' },
-      { q: 'I received a wrong product.', a: 'We apologize for the inconvenience. Please share a continuous unboxing video within 24 hours, and we will arrange an exchange immediately.' },
-      { q: 'I did not receive my order but it shows delivered.', a: 'Please file a complaint within 24 hours on WhatsApp. We will investigate with the courier and resolve it at the earliest.' }
-    ]},
-    { icon: '⌚', label: 'Watch Care', qs: [
-      { q: 'How do I clean my watch?', a: 'Wipe it with a soft cloth. Avoid using chemicals. For metal straps, use a soft toothbrush. Keep it away from water and perfume.' },
-      { q: 'Is the watch waterproof?', a: 'Our watches are 3ATM water-resistant (splash-proof). Do not use them for swimming or showering.' }
-    ]},
-    { icon: '❓', label: 'General & Account', qs: [
-      { q: 'How do I contact support?', a: 'You can WhatsApp us at +91 79906 43295. We are available from 10 AM to 7 PM (Mon-Sat).' },
-      { q: 'Do you have an Instagram page?', a: 'Yes! Follow us on Instagram for new arrivals and offers. (Link in footer)' }
+    { icon: '❓', label: 'General & Support', qs: [
+      { q: 'Do you have an Instagram page?', a: 'Yes, please follow us for new arrivals and offers. (Link is in the footer).' },
+      { q: 'How can I contact customer support?', a: 'You can WhatsApp us at +91 79906 43295. We are available from 10 AM to 7 PM, Mon-Sat.' }
     ]}
   ];
 
+  function appendMsg(text, type) {
+    var msg = document.createElement('div');
+    msg.className = 'bs-msg bs-msg-' + type;
+    msg.innerHTML = text;
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+    return msg;
+  }
+
+  function showTyping() {
+    var typing = document.createElement('div');
+    typing.className = 'bs-msg bs-msg-bot typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    body.appendChild(typing);
+    body.scrollTop = body.scrollHeight;
+    return typing;
+  }
+
   function showCategories() {
-    optionsDiv.innerHTML = '';
-    body.innerHTML = '<div class="bs-msg bs-msg-bot">Please select a topic:</div>';
-    body.appendChild(optionsDiv);
+    body.innerHTML = '';
+    appendMsg('Hi there! 👋 Welcome to BrandScanner. How can we help you today?', 'bot');
+    var optionsDiv = document.createElement('div');
+    optionsDiv.className = 'bs-btn-group';
     chatData.forEach(function(cat) {
       var btn = document.createElement('button');
       btn.className = 'bs-btn';
@@ -103,87 +187,128 @@
       btn.onclick = function() { showQuestions(cat); };
       optionsDiv.appendChild(btn);
     });
+    body.appendChild(optionsDiv);
     body.scrollTop = body.scrollHeight;
   }
 
   function showQuestions(cat) {
-    optionsDiv.innerHTML = '';
-    body.innerHTML = '<div class="bs-msg bs-msg-bot">Here are some common questions about <strong>' + cat.label + '</strong>:</div>';
-    body.appendChild(optionsDiv);
-    cat.qs.forEach(function(item) {
-      var btn = document.createElement('button');
-      btn.className = 'bs-btn';
-      btn.textContent = item.q;
-      btn.onclick = function() { showAnswer(item); };
-      optionsDiv.appendChild(btn);
-    });
-    var backBtn = document.createElement('button');
-    backBtn.className = 'bs-btn';
-    backBtn.style.borderColor = '#6b7280';
-    backBtn.style.color = '#6b7280';
-    backBtn.innerHTML = '<span>⬅ Back to categories</span>';
-    backBtn.onclick = showCategories;
-    optionsDiv.appendChild(backBtn);
-    body.scrollTop = body.scrollHeight;
-  }
+    appendMsg(cat.icon + ' ' + cat.label, 'user');
+    var oldGroups = body.querySelectorAll('.bs-btn-group');
+    oldGroups.forEach(function(el) { el.remove(); });
 
-  function showAnswer(item) {
-    optionsDiv.innerHTML = '';
-    var userMsg = document.createElement('div');
-    userMsg.className = 'bs-msg bs-msg-user';
-    userMsg.textContent = item.q;
-    body.appendChild(userMsg);
+    var typing = showTyping();
+
     setTimeout(function() {
-      var botMsg = document.createElement('div');
-      botMsg.className = 'bs-msg bs-msg-bot';
-      botMsg.textContent = item.a;
-      body.appendChild(botMsg);
-      var againBtn = document.createElement('button');
-      againBtn.className = 'bs-btn';
-      againBtn.innerHTML = '<span>🔄 Ask something else</span>';
-      againBtn.style.marginTop = '10px';
-      againBtn.onclick = showCategories;
-      var btnWrap = document.createElement('div');
-      btnWrap.className = 'bs-btn-group';
-      btnWrap.appendChild(againBtn);
-      body.appendChild(btnWrap);
-      body.scrollTop = body.scrollHeight;
-    }, 400);
-    body.scrollTop = body.scrollHeight;
-  }
-
-  function searchQuestions(query) {
-    if (!query || query.trim().length < 2) { showCategories(); return; }
-    var q = query.toLowerCase().trim();
-    var results = [];
-    chatData.forEach(function(cat) {
+      body.removeChild(typing);
+      appendMsg('Here are some common questions about <strong>' + cat.label + '</strong>:', 'bot');
+      
+      var optionsDiv = document.createElement('div');
+      optionsDiv.className = 'bs-btn-group';
+      
       cat.qs.forEach(function(item) {
-        if (item.q.toLowerCase().indexOf(q) !== -1 || item.a.toLowerCase().indexOf(q) !== -1) {
-          results.push(item);
-        }
-      });
-    });
-    optionsDiv.innerHTML = '';
-    if (results.length === 0) {
-      body.innerHTML = '<div class="bs-msg bs-msg-bot">No results found for "<strong>' + query + '</strong>". Please try different keywords.</div>';
-      body.appendChild(optionsDiv);
-      var backBtn = document.createElement('button');
-      backBtn.className = 'bs-btn';
-      backBtn.innerHTML = '<span>⬅ Back to categories</span>';
-      backBtn.onclick = showCategories;
-      optionsDiv.appendChild(backBtn);
-    } else {
-      body.innerHTML = '<div class="bs-msg bs-msg-bot">Here are the results for "<strong>' + query + '</strong>":</div>';
-      body.appendChild(optionsDiv);
-      results.slice(0, 5).forEach(function(item) {
         var btn = document.createElement('button');
         btn.className = 'bs-btn';
         btn.textContent = item.q;
         btn.onclick = function() { showAnswer(item); };
         optionsDiv.appendChild(btn);
       });
-    }
-    body.scrollTop = body.scrollHeight;
+      
+      var backBtn = document.createElement('button');
+      backBtn.className = 'bs-btn';
+      backBtn.style.borderColor = '#6b7280';
+      backBtn.style.color = '#6b7280';
+      backBtn.innerHTML = '<span>⬅ Back to categories</span>';
+      backBtn.onclick = showCategories;
+      optionsDiv.appendChild(backBtn);
+      
+      body.appendChild(optionsDiv);
+      body.scrollTop = body.scrollHeight;
+    }, 1500);
+  }
+
+  function showAnswer(item) {
+    appendMsg(item.q, 'user');
+    var oldGroups = body.querySelectorAll('.bs-btn-group');
+    oldGroups.forEach(function(el) { el.remove(); });
+
+    var typing = showTyping();
+
+    setTimeout(function() {
+      body.removeChild(typing);
+      appendMsg(item.a, 'bot');
+      
+      var optionsDiv = document.createElement('div');
+      optionsDiv.className = 'bs-btn-group';
+      var againBtn = document.createElement('button');
+      againBtn.className = 'bs-btn';
+      againBtn.innerHTML = '<span>🔄 Ask something else</span>';
+      againBtn.onclick = showCategories;
+      optionsDiv.appendChild(againBtn);
+      
+      body.appendChild(optionsDiv);
+      body.scrollTop = body.scrollHeight;
+    }, 2500);
+  }
+
+  // SMART SEARCH (Multi-word Keyword based)
+  function searchQuestions(query) {
+    if (!query || query.trim().length < 2) { return; }
+    
+    appendMsg(query, 'user');
+    var typing = showTyping();
+    
+    var q = query.toLowerCase().trim();
+    var tokens = q.split(/\s+/).filter(Boolean);
+    var results = [];
+
+    chatData.forEach(function(cat) {
+      cat.qs.forEach(function(item) {
+        // Create a search string with Category + Question + Answer
+        var searchText = (cat.label + ' ' + item.q + ' ' + item.a).toLowerCase();
+        
+        // Check if ALL tokens typed by user exist in the search string
+        var matchesAll = tokens.every(function(token) {
+          return searchText.indexOf(token) !== -1;
+        });
+
+        if (matchesAll) {
+          results.push(item);
+        }
+      });
+    });
+
+    setTimeout(function() {
+      body.removeChild(typing);
+      
+      var oldGroups = body.querySelectorAll('.bs-btn-group');
+      oldGroups.forEach(function(el) { el.remove(); });
+
+      if (results.length === 0) {
+        appendMsg('No results found for "<strong>' + query + '</strong>". Please try different keywords (e.g., "advance", "box", "delivery").', 'bot');
+        var optionsDiv = document.createElement('div');
+        optionsDiv.className = 'bs-btn-group';
+        var backBtn = document.createElement('button');
+        backBtn.className = 'bs-btn';
+        backBtn.innerHTML = '<span>⬅ Back to categories</span>';
+        backBtn.onclick = showCategories;
+        optionsDiv.appendChild(backBtn);
+        body.appendChild(optionsDiv);
+      } else {
+        appendMsg('Here are the results for "<strong>' + query + '</strong>":', 'bot');
+        var optionsDiv = document.createElement('div');
+        optionsDiv.className = 'bs-btn-group';
+        results.slice(0, 6).forEach(function(item) {
+          var btn = document.createElement('button');
+          btn.className = 'bs-btn';
+          btn.textContent = item.q;
+          btn.onclick = function() { showAnswer(item); };
+          optionsDiv.appendChild(btn);
+        });
+        body.appendChild(optionsDiv);
+      }
+      body.scrollTop = body.scrollHeight;
+    }, 2000);
+    searchInput.value = '';
   }
 
   searchBtn.onclick = function() { searchQuestions(searchInput.value); };
@@ -191,7 +316,10 @@
 
   toggle.onclick = function() {
     window_.classList.toggle('open');
-    if (window_.classList.contains('open') && optionsDiv.innerHTML === '') { showCategories(); }
+    tooltip.classList.remove('show');
+    if (window_.classList.contains('open') && body.innerHTML === '') { 
+      showCategories(); 
+    }
   };
   closeBtn.onclick = function() { window_.classList.remove('open'); };
 })();
