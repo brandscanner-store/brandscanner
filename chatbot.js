@@ -3,28 +3,38 @@
   style.innerHTML = `
     /* Techno AI Toggle Button */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; 
+      position: fixed; bottom: 85px; right: 20px; width: 64px; height: 64px; 
       border-radius: 50%; background: #0a1f44; color: #b3ff00; 
       display: flex; align-items: center; justify-content: center; 
       box-shadow: 0 4px 20px rgba(10,31,68,.4); z-index: 999; 
       cursor: pointer; transition: transform 0.2s; border: 2px solid #b3ff00; 
+      overflow: hidden;
     }
-    .bs-chat-toggle svg { width: 34px; height: 34px; fill: currentColor; }
+    .bs-chat-toggle svg { width: 42px; height: 42px; }
     .bs-chat-toggle:active { transform: scale(0.92); }
     
-    /* 30-Second Slide & Wave Animation */
+    /* Waving Hand Animation */
+    .waving-hand {
+      transform-origin: 17px 17px;
+      animation: wave-hand 0.8s infinite ease-in-out;
+    }
+    @keyframes wave-hand {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-25deg); }
+      75% { transform: rotate(20deg); }
+    }
+
+    /* 30-Second Slide Animation */
     .bs-chat-toggle.wave-long { animation: wave-long-anim 3.5s ease-in-out forwards; }
     @keyframes wave-long-anim {
       0% { transform: translateX(80px); opacity: 0; }
       15% { transform: translateX(0); opacity: 1; }
-      25%, 45%, 65%, 85% { transform: rotate(-15deg) scale(1.05); }
-      35%, 55%, 75% { transform: rotate(10deg) scale(1.05); }
-      100% { transform: rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateX(0) scale(1); }
     }
 
     /* Tooltip */
     .bs-chat-tooltip {
-      position: fixed; bottom: 100px; right: 90px; background: #fff; 
+      position: fixed; bottom: 100px; right: 95px; background: #fff; 
       color: #0a1f44; padding: 8px 14px; border-radius: 12px; 
       font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,.1); 
       z-index: 999; border: 1px solid #e5e5e0; opacity: 0; 
@@ -40,7 +50,7 @@
 
     /* Chat Window */
     .bs-chat-window { 
-      position: fixed; bottom: 155px; right: 20px; width: 350px; 
+      position: fixed; bottom: 160px; right: 20px; width: 350px; 
       max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 180px); 
       background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
       z-index: 1000; display: none; flex-direction: column; overflow: hidden; 
@@ -81,8 +91,20 @@
   `;
   document.head.appendChild(style);
 
-  // Premium Techno AI Icon (Sleek Robot Face)
-  var robotSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a1.5 1.5 0 0 0-1.5 1.5V5H9a4 4 0 0 0-4 4v7a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4h-1.5V3.5A1.5 1.5 0 0 0 12 2Zm-2 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm-4 5.5h4v1h-4v-1Z"/></svg>`;
+  // Full Robot with Waving Hand
+  var robotSVG = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="12" y1="2" x2="12" y2="5" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="2" r="1.5" fill="#b3ff00"/>
+    <rect x="4" y="5" width="16" height="11" rx="3" stroke="#b3ff00" stroke-width="2"/>
+    <circle cx="8.5" cy="10" r="1.5" fill="#b3ff00"/>
+    <circle cx="15.5" cy="10" r="1.5" fill="#b3ff00"/>
+    <path d="M9 13.5H15" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
+    <rect x="7" y="16" width="10" height="7" rx="2" stroke="#b3ff00" stroke-width="2"/>
+    <g class="waving-hand">
+      <line x1="17" y1="18" x2="21" y2="15" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="22" cy="14.5" r="1.5" fill="#b3ff00"/>
+    </g>
+  </svg>`;
 
   var chatHTML = `
     <div class="bs-chat-tooltip" id="bsChatTooltip">Ask Techno AI! 👋</div>
