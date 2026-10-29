@@ -1,7 +1,7 @@
 (function() {
   var style = document.createElement('style');
   style.innerHTML = `
-    /* Robot Toggle Button */
+    /* Techno AI Toggle Button */
     .bs-chat-toggle { 
       position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; 
       border-radius: 50%; background: #0a1f44; color: #b3ff00; 
@@ -9,17 +9,17 @@
       box-shadow: 0 4px 20px rgba(10,31,68,.4); z-index: 999; 
       cursor: pointer; transition: transform 0.2s; border: 2px solid #b3ff00; 
     }
-    .bs-chat-toggle svg { width: 32px; height: 32px; fill: currentColor; }
+    .bs-chat-toggle svg { width: 34px; height: 34px; fill: currentColor; }
     .bs-chat-toggle:active { transform: scale(0.92); }
     
-    /* Wave Animation */
-    .bs-chat-toggle.wave { animation: wave-anim 0.8s ease-in-out 2; }
-    @keyframes wave-anim {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-15deg); }
-      50% { transform: rotate(10deg); }
-      75% { transform: rotate(-5deg); }
-      100% { transform: rotate(0deg); }
+    /* 30-Second Slide & Wave Animation */
+    .bs-chat-toggle.wave-long { animation: wave-long-anim 3.5s ease-in-out forwards; }
+    @keyframes wave-long-anim {
+      0% { transform: translateX(80px); opacity: 0; }
+      15% { transform: translateX(0); opacity: 1; }
+      25%, 45%, 65%, 85% { transform: rotate(-15deg) scale(1.05); }
+      35%, 55%, 75% { transform: rotate(10deg) scale(1.05); }
+      100% { transform: rotate(0deg) scale(1); opacity: 1; }
     }
 
     /* Tooltip */
@@ -81,20 +81,20 @@
   `;
   document.head.appendChild(style);
 
-  // Robot SVG Icon
-  var robotSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4v-7a4 4 0 0 1 4-4h1V5.73A2 2 0 0 1 12 2ZM9.5 12a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM8 17v1h8v-1H8Z"/></svg>`;
+  // Premium Techno AI Icon (Sleek Robot Face)
+  var robotSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a1.5 1.5 0 0 0-1.5 1.5V5H9a4 4 0 0 0-4 4v7a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4h-1.5V3.5A1.5 1.5 0 0 0 12 2Zm-2 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm-4 5.5h4v1h-4v-1Z"/></svg>`;
 
   var chatHTML = `
-    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask me! 👋</div>
+    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask Techno AI! 👋</div>
     <div class="bs-chat-toggle" id="bsChatToggle">${robotSVG}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        <h3>🤖 Support Bot</h3>
+        <h3>⚡ Techno AI</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
       <div class="bs-chat-body" id="bsChatBody"></div>
       <div class="bs-search-wrap">
-        <input type="text" id="bsChatSearchInput" placeholder="Type a keyword (e.g., advance, box)...">
+        <input type="text" id="bsChatSearchInput" placeholder="Type a keyword (e.g., box)...">
         <button id="bsChatSearchBtn">🔍</button>
       </div>
     </div>
@@ -111,13 +111,21 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  // Wave & Tooltip on load
+  // First Load Animation & Tooltip (after 1 second)
   setTimeout(function() {
-    toggle.classList.add('wave');
+    toggle.classList.add('wave-long');
     tooltip.classList.add('show');
     setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
-    setTimeout(function(){ toggle.classList.remove('wave'); }, 1600);
+    setTimeout(function(){ toggle.classList.remove('wave-long'); }, 3600);
   }, 1000);
+
+  // Repeat Animation Every 30 Seconds
+  setInterval(function() {
+    if (!window_.classList.contains('open')) {
+      toggle.classList.add('wave-long');
+      setTimeout(function(){ toggle.classList.remove('wave-long'); }, 3600);
+    }
+  }, 30000); 
 
   var chatData = [
     { icon: '📦', label: 'Quality & Video Call', qs: [
@@ -263,17 +271,11 @@
 
     chatData.forEach(function(cat) {
       cat.qs.forEach(function(item) {
-        // Create a search string with Category + Question + Answer
         var searchText = (cat.label + ' ' + item.q + ' ' + item.a).toLowerCase();
-        
-        // Check if ALL tokens typed by user exist in the search string
         var matchesAll = tokens.every(function(token) {
           return searchText.indexOf(token) !== -1;
         });
-
-        if (matchesAll) {
-          results.push(item);
-        }
+        if (matchesAll) { results.push(item); }
       });
     });
 
@@ -317,9 +319,16 @@
   toggle.onclick = function() {
     window_.classList.toggle('open');
     tooltip.classList.remove('show');
-    if (window_.classList.contains('open') && body.innerHTML === '') { 
-      showCategories(); 
+    if (window_.classList.contains('open')) {
+      document.body.style.overflow = 'hidden'; // Background Scroll Lock
+      if (body.innerHTML === '') { showCategories(); }
+    } else {
+      document.body.style.overflow = ''; // Unlock background scroll
     }
   };
-  closeBtn.onclick = function() { window_.classList.remove('open'); };
+  
+  closeBtn.onclick = function() { 
+    window_.classList.remove('open'); 
+    document.body.style.overflow = ''; 
+  };
 })();
