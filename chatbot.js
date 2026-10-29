@@ -7,32 +7,52 @@
       border-radius: 50%; background: #0a1f44; color: #b3ff00; 
       display: flex; align-items: center; justify-content: center; 
       box-shadow: 0 4px 20px rgba(10,31,68,.4); z-index: 999; 
-      cursor: pointer; transition: transform 0.2s; border: 2px solid #b3ff00; 
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #b3ff00; 
       overflow: hidden;
     }
-    .bs-chat-toggle svg { width: 42px; height: 42px; overflow: visible; }
     .bs-chat-toggle:active { transform: scale(0.92); }
+    .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
     
-    /* Waving Icon Animation (chat bubble swings like a wave) */
-    .waving-hand {
-      transform-origin: 16px 26px;
-      animation: wave-hand 0.8s infinite ease-in-out;
+    /* Avatar SVG Animations */
+    .bs-chat-toggle svg { width: 46px; height: 46px; overflow: visible; }
+    
+    /* Floating Body */
+    .avatar-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    /* Waving Hand on Load */
+    .avatar-hand {
+      transform-origin: 80px 65px;
+      animation: wave-hand 2s ease-in-out 1;
     }
     @keyframes wave-hand {
       0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(-12deg); }
-      75% { transform: rotate(10deg); }
+      20%, 60% { transform: rotate(-25deg); }
+      40%, 80% { transform: rotate(15deg); }
     }
 
-    /* Lightning bolt flash */
-    .bolt-flash {
-      animation: bolt-flash 1.6s infinite ease-in-out;
+    /* Blinking Eyes */
+    .avatar-eye, .header-eye {
+      animation: blink 4s infinite;
+      transform-origin: center;
     }
-    @keyframes bolt-flash {
-      0%, 60%, 100% { opacity: 1; }
-      68% { opacity: 0.35; }
-      76% { opacity: 1; }
-      84% { opacity: 0.5; }
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+
+    /* Antenna Glow */
+    .antenna-glow {
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { opacity: 0.7; r: 3px; }
+      to { opacity: 1; r: 5px; }
     }
 
     /* 30-Second Slide Animation */
@@ -70,8 +90,10 @@
     .bs-chat-window.open { display: flex; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .bs-chat-header { background: #0a1f44; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; display: flex; align-items: center; gap: 8px; }
+    /* Chat Header with Avatar */
+    .bs-chat-header { background: #0a1f44; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .header-bot-svg { width: 40px; height: 40px; }
+    .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; flex: 1; }
     .bs-chat-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; }
 
     /* Chat Body & Messages */
@@ -102,20 +124,46 @@
   `;
   document.head.appendChild(style);
 
-  // Flash AI Icon: Neon chat bubble + navy lightning bolt (bubble waves, bolt flashes)
-  var flashSVG = `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Flash AI">
-    <g class="waving-hand">
-      <path d="M10 5h12a6 6 0 0 1 6 6v7a6 6 0 0 1-6 6h-6.5L10 28.5V24a6 6 0 0 1-6-6v-7a6 6 0 0 1 6-6z" fill="#b3ff00"/>
-      <path class="bolt-flash" d="M17.4 8L11.5 15.4H15.2L14.2 21L20.5 12.9H16.8Z" fill="#0a1f44" stroke="#0a1f44" stroke-width="1" stroke-linejoin="round"/>
+  // Floating Avatar (Looking straight)
+  var flashSVG = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="46" fill="#0a1f44" stroke="#b3ff00" stroke-width="3"/>
+    <line x1="50" y1="16" x2="50" y2="28" stroke="#b3ff00" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="50" cy="14" r="4" fill="#b3ff00" class="antenna-glow"/>
+    <g class="avatar-float">
+      <rect x="24" y="30" width="52" height="40" rx="12" fill="#b3ff00"/>
+      <circle cx="38" cy="46" r="6" fill="#0a1f44" class="avatar-eye"/>
+      <circle cx="62" cy="46" r="6" fill="#0a1f44" class="avatar-eye"/>
+      <path d="M 42 56 Q 50 62 58 56" stroke="#0a1f44" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    <g class="avatar-hand">
+      <rect x="78" y="55" width="10" height="22" rx="5" fill="#b3ff00" transform="rotate(25 83 66)"/>
     </g>
   </svg>`;
 
+  // Header Avatar (Looking down at chat)
+  var headerBotSVG = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="header-bot-svg">
+    <!-- Head -->
+    <rect x="20" y="25" width="60" height="50" rx="15" fill="#b3ff00"/>
+    <!-- Antenna -->
+    <line x1="50" y1="15" x2="50" y2="25" stroke="#b3ff00" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="50" cy="12" r="4" fill="#b3ff00"/>
+    <!-- Eyes looking DOWN -->
+    <circle cx="35" cy="45" r="7" fill="#0a1f44" class="header-eye"/>
+    <circle cx="65" cy="45" r="7" fill="#0a1f44" class="header-eye"/>
+    <!-- Pupils looking down -->
+    <circle cx="35" cy="49" r="3" fill="#b3ff00"/>
+    <circle cx="65" cy="49" r="3" fill="#b3ff00"/>
+    <!-- Smile -->
+    <path d="M 40 60 Q 50 68 60 60" stroke="#0a1f44" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>`;
+
   var chatHTML = `
-    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask Flash AI! 👋</div>
+    <div class="bs-chat-tooltip" id="bsChatTooltip">Hey! Need help? 👋</div>
     <div class="bs-chat-toggle" id="bsChatToggle">${flashSVG}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        <h3>⚡ Flash AI</h3>
+        ${headerBotSVG}
+        <h3>Flash AI</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
       <div class="bs-chat-body" id="bsChatBody"></div>
@@ -343,18 +391,16 @@
   searchInput.onkeydown = function(e) { if (e.key === 'Enter') { searchQuestions(searchInput.value); } };
 
   toggle.onclick = function() {
-    window_.classList.toggle('open');
+    window_.classList.add('open');
+    toggle.classList.add('hidden-bot'); // Hides floating bot
     tooltip.classList.remove('show');
-    if (window_.classList.contains('open')) {
-      document.body.style.overflow = 'hidden'; // Background Scroll Lock
-      if (body.innerHTML === '') { showCategories(); }
-    } else {
-      document.body.style.overflow = ''; // Unlock background scroll
-    }
+    document.body.style.overflow = 'hidden'; // Background Scroll Lock
+    if (body.innerHTML === '') { showCategories(); }
   };
   
   closeBtn.onclick = function() { 
     window_.classList.remove('open'); 
+    toggle.classList.remove('hidden-bot'); // Brings floating bot back
     document.body.style.overflow = ''; 
   };
 })();
