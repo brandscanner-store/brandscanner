@@ -1,7 +1,7 @@
 (function() {
   var style = document.createElement('style');
   style.innerHTML = `
-    /* Techno AI Toggle Button */
+    /* Flash AI Toggle Button */
     .bs-chat-toggle { 
       position: fixed; bottom: 85px; right: 20px; width: 64px; height: 64px; 
       border-radius: 50%; background: #0a1f44; color: #b3ff00; 
@@ -10,18 +10,29 @@
       cursor: pointer; transition: transform 0.2s; border: 2px solid #b3ff00; 
       overflow: hidden;
     }
-    .bs-chat-toggle svg { width: 42px; height: 42px; }
+    .bs-chat-toggle svg { width: 42px; height: 42px; overflow: visible; }
     .bs-chat-toggle:active { transform: scale(0.92); }
     
-    /* Waving Hand Animation */
+    /* Waving Icon Animation (chat bubble swings like a wave) */
     .waving-hand {
-      transform-origin: 17px 17px;
+      transform-origin: 16px 26px;
       animation: wave-hand 0.8s infinite ease-in-out;
     }
     @keyframes wave-hand {
       0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(-25deg); }
-      75% { transform: rotate(20deg); }
+      25% { transform: rotate(-12deg); }
+      75% { transform: rotate(10deg); }
+    }
+
+    /* Lightning bolt flash */
+    .bolt-flash {
+      animation: bolt-flash 1.6s infinite ease-in-out;
+    }
+    @keyframes bolt-flash {
+      0%, 60%, 100% { opacity: 1; }
+      68% { opacity: 0.35; }
+      76% { opacity: 1; }
+      84% { opacity: 0.5; }
     }
 
     /* 30-Second Slide Animation */
@@ -91,27 +102,20 @@
   `;
   document.head.appendChild(style);
 
-  // Full Robot with Waving Hand
-  var robotSVG = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="12" y1="2" x2="12" y2="5" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="12" cy="2" r="1.5" fill="#b3ff00"/>
-    <rect x="4" y="5" width="16" height="11" rx="3" stroke="#b3ff00" stroke-width="2"/>
-    <circle cx="8.5" cy="10" r="1.5" fill="#b3ff00"/>
-    <circle cx="15.5" cy="10" r="1.5" fill="#b3ff00"/>
-    <path d="M9 13.5H15" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
-    <rect x="7" y="16" width="10" height="7" rx="2" stroke="#b3ff00" stroke-width="2"/>
+  // Flash AI Icon: Neon chat bubble + navy lightning bolt (bubble waves, bolt flashes)
+  var flashSVG = `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Flash AI">
     <g class="waving-hand">
-      <line x1="17" y1="18" x2="21" y2="15" stroke="#b3ff00" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="22" cy="14.5" r="1.5" fill="#b3ff00"/>
+      <path d="M10 5h12a6 6 0 0 1 6 6v7a6 6 0 0 1-6 6h-6.5L10 28.5V24a6 6 0 0 1-6-6v-7a6 6 0 0 1 6-6z" fill="#b3ff00"/>
+      <path class="bolt-flash" d="M17.4 8L11.5 15.4H15.2L14.2 21L20.5 12.9H16.8Z" fill="#0a1f44" stroke="#0a1f44" stroke-width="1" stroke-linejoin="round"/>
     </g>
   </svg>`;
 
   var chatHTML = `
-    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask Techno AI! 👋</div>
-    <div class="bs-chat-toggle" id="bsChatToggle">${robotSVG}</div>
+    <div class="bs-chat-tooltip" id="bsChatTooltip">Ask Flash AI! 👋</div>
+    <div class="bs-chat-toggle" id="bsChatToggle">${flashSVG}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        <h3>⚡ Techno AI</h3>
+        <h3>⚡ Flash AI</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
       <div class="bs-chat-body" id="bsChatBody"></div>
