@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Cart — BrandScanner</title>
+<style>
+:root{--bg:#faf9f6;--card:#fff;--navy:#0a1f44;--green:#b3ff00;--green-dark:#6b8c00;--text:#0a1f44;--muted:#6b7280;--border:#e5e5e0;--soft:#f4f1ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--card:#141414;--text:#f0f0f0;--navy:#4cc3a4;--muted:#8a8a8a;--border:#222;--soft:#1a1a1a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding-bottom:100px}
+.top-strip{background:var(--navy);color:#fff;padding:9px 16px;text-align:center;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.top-strip b{color:var(--green)}
+.top-nav{position:sticky;top:0;z-index:40;background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px}
+.top-nav-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.back{color:var(--navy);text-decoration:none;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase}
+.wrap{max-width:720px;margin:0 auto;padding:20px}
+.cart-empty{text-align:center;padding:80px 20px}
+.cart-empty h2{font-family:Georgia,serif;font-size:24px;color:var(--navy);margin-bottom:12px}
+.cart-empty p{color:var(--muted);margin-bottom:24px}
+.cart-empty a{background:var(--navy);color:#fff;text-decoration:none;padding:14px 28px;border-radius:8px;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;display:inline-block}
+.cart-item{display:flex;gap:14px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;position:relative}
+.cart-img{width:80px;height:80px;flex:0 0 80px;background:var(--soft);border-radius:8px;overflow:hidden}
+.cart-img img{width:100%;height:100%;object-fit:cover}
+.cart-info{flex:1;display:flex;flex-direction:column;justify-content:center}
+.cart-name{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:4px;padding-right:24px}
+.cart-price{font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--navy)}
+.cart-code{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;margin-top:4px}
+.remove-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px}
+.remove-btn:hover{color:var(--red)}
+.cart-summary{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:24px}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:var(--muted)}
+.summary-row.total{font-size:20px;font-weight:800;color:var(--navy);font-family:Georgia,serif;border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
+.checkout-btn{display:block;width:100%;padding:16px;background:var(--navy);color:#fff;text-align:center;text-decoration:none;border-radius:8px;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-top:24px;border:none;cursor:pointer}
+.checkout-btn:hover{background:var(--green);color:var(--navy)}
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;z-index:100;box-shadow:0 -4px 20px rgba(10,31,68,.1)}
+.sticky-bar[hidden]{display:none}
+.sticky-bar button{flex:1;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;text-transform:uppercase;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top-strip">Free Shipping · <b>Cash on Delivery</b> · 7-Day Exchange</div>
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="index.html" class="back">← Continue Shopping</a>
+    <span style="font-family:Georgia,serif;font-weight:700;color:var(--navy);">Your Cart</span>
+  </div>
+</nav>
+<div class="wrap">
+  <div id="cartContent"></div>
+</div>
+<div class="sticky-bar" id="stickyBar" hidden>
+  <button onclick="location.href='checkout.html?mode=cart'">Proceed to Checkout</button>
+</div>
+<script>
+(function(){
+  function fmt(n){ var x = Number(n); return isFinite(x) ? '₹' + x.toLocaleString('en-IN') : ''; }
+  var cart = JSON.parse(localStorage.getItem('bs_cart') || '[]');
+  var content = document.getElementById('cartContent');
+  var stickyBar = document.getElementById('stickyBar');
+
+  function renderCart(){
+    if (cart.length === 0) {
+      content.innerHTML = '<div class="cart-empty"><h2>Your Cart is Empty</h2><p>Looks like you haven\'t added any watches yet.</p><a href="index.html">Start Shopping</a></div>';
+      stickyBar.hidden = true;
+      return;
+    }
+
+    var total = 0;
+    content.innerHTML = '<div id="cartList"></div><div class="cart-summary" id="cartSummary"></div>';
+    var list = document.getElementById('cartList');
+
+    cart.forEach(function(item, index){
+      total += Number(item.price);
+      var el = document.createElement('div');
+      el.className = 'cart-item';
+      el.innerHTML = `
+        <div class="cart-img">${item.image ? '<img src="'+item.image+'" alt="'+item.name+'">' : ''}</div>
+        <div class="cart-info">
+          <div class="cart-name">${item.name}</div>
+          <div class="cart-price">${fmt(item.price)}</div>
+          <div class="cart-code">CODE: ${item.code}</div>
+        </div>
+        <button class="remove-btn" data-index="${index}">✕</button>
+      `;
+      list.appendChild(el);
+    });
+
+    // Summary
+    var summary = document.getElementById('cartSummary');
+    summary.innerHTML = `
+      <div class="summary-row"><span>Subtotal (${cart.length} items)</span><span>${fmt(total)}</span></div>
+      <div class="summary-row"><span>Shipping</span><span style="color:var(--green-dark);font-weight:700;">FREE</span></div>
+      <div class="summary-row total"><span>Total</span><span>${fmt(total)}</span></div>
+      <a href="checkout.html?mode=cart" class="checkout-btn">Proceed to Checkout</a>
+    `;
+    stickyBar.hidden = false;
+
+    // Add remove listeners
+    document.querySelectorAll('.remove-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = parseInt(this.getAttribute('data-index'));
+        cart.splice(idx, 1);
+        localStorage.setItem('bs_cart', JSON.stringify(cart));
+        renderCart();
+      });
+    });
+  }
+
+  renderCart();
+})();
+</script>
+</body>
+</html>
