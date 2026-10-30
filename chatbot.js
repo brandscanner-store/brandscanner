@@ -3,22 +3,23 @@
   style.innerHTML = `
     /* Flash AI Toggle Button */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: -100px; 
-      width: 80px; height: 80px; 
+      position: fixed; bottom: 85px; right: 20px; width: 80px; height: 80px; 
       background: transparent; 
       display: flex; align-items: center; justify-content: center; 
       z-index: 999; cursor: pointer; 
-      animation: walk-in 1.5s ease-out forwards; 
+      opacity: 0; /* Starts hidden for walk-in */
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
     
     /* 1. Walk In Animation */
+    .bs-chat-toggle.walk-in {
+      animation: walk-in 1.5s ease-out forwards;
+    }
     @keyframes walk-in {
-      0% { right: -100px; opacity: 0; transform: translateY(10px); }
-      50% { right: 10px; opacity: 1; transform: translateY(-5px); }
-      75% { right: 15px; transform: translateY(2px); }
-      100% { right: 20px; opacity: 1; transform: translateY(0); }
+      0% { opacity: 0; transform: translateX(80px) translateY(10px); }
+      50% { opacity: 1; transform: translateX(-5px) translateY(-5px); }
+      100% { opacity: 1; transform: translateX(0) translateY(0); }
     }
 
     /* 2. Floating Animation */
@@ -43,7 +44,7 @@
     /* Bot Image */
     .bot-image {
       width: 100%; height: 100%; object-fit: contain; 
-      filter: drop-shadow(0px 12px 16px rgba(10, 31, 68, 0.4));
+      filter: drop-shadow(0px 10px 15px rgba(10, 31, 68, 0.3));
     }
 
     /* Tooltip */
@@ -75,7 +76,7 @@
 
     /* Chat Header with Avatar */
     .bs-chat-header { background: #0a1f44; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
-    .header-bot-image { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #b3ff00; border: 2px solid #b3ff00; }
+    .header-bot-image { width: 42px; height: 42px; border-radius: 50%; object-fit: contain; background: #0a1f44; border: 1px solid #b3ff00; }
     .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; flex: 1; }
     .bs-chat-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; }
 
@@ -107,15 +108,15 @@
   `;
   document.head.appendChild(style);
 
-  // AI Generated Image URL based on your exact prompt
-  var aiImageUrl = 'https://image.pollinations.ai/prompt/A%20cute%2C%20small%2C%20futuristic%20humanoid%20robot.%20Large%2C%20rounded-square%20head%20with%20smooth%20curved%20corners.%20Glossy%20white%20pearl-finish%20outer%20head%20casing.%20Large%20black%2C%20slightly%20curved%20rectangular%20screen%20covering%20the%20face.%20Two%20small%20glowing%20neon-green%20LED%20eyes.%20Compact%2C%20short%20humanoid%20body.%20Short%20white%20arms%20with%20visible%20silver%20metallic%20joints.%20Short%20legs%20with%20rounded%20knee%20joints.%20White%20futuristic%20boots.%20Navy%20blue%20background%2C%20studio%20lighting%2C%20high-quality%203D%20CGI%20render?width=256&height=256&nologo=true&seed=42';
+  // AI Generated Premium Cute Robot Prompt URL
+  var aiImageUrl = 'https://image.pollinations.ai/prompt/cute_premium_3d_humanoid_robot_glossy_white_body_black_screen_face_neon_green_led_eyes_futuristic_pixar_style_3d_render_isolated_on_transparent_background?width=256&height=256&nologo=true&seed=8';
 
   var botImgHTML = `<img src="${aiImageUrl}" class="bot-image" alt="Flash AI">`;
   var headerBotHTML = `<img src="${aiImageUrl}" class="header-bot-image" alt="Flash AI">`;
 
   var chatHTML = `
     <div class="bs-chat-tooltip" id="bsChatTooltip">Hey! Need help? 👋</div>
-    <div class="bs-chat-toggle" id="bsChatToggle">${botImgHTML}</div>
+    <div class="bs-chat-toggle walk-in" id="bsChatToggle">${botImgHTML}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
         ${headerBotHTML}
@@ -141,17 +142,25 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  setTimeout(function() { toggle.classList.add('floating'); }, 1500);
+  // 1. Walk-in ke baad Float karna shuru kare
+  setTimeout(function() { 
+    toggle.classList.remove('walk-in'); 
+    toggle.classList.add('floating'); 
+  }, 1500);
+
+  // 2. Pehli baar Tooltip dikhao
   setTimeout(function() {
     tooltip.classList.add('show');
     setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
   }, 2000);
 
+  // 3. Har 30 second me Wave karo
   setInterval(function() {
     if (!window_.classList.contains('open')) {
       toggle.classList.remove('floating');
       toggle.classList.add('waving');
       tooltip.classList.add('show');
+      
       setTimeout(function(){ tooltip.classList.remove('show'); }, 3000);
       setTimeout(function(){
         toggle.classList.remove('waving');
@@ -318,7 +327,7 @@
       oldGroups.forEach(function(el) { el.remove(); });
 
       if (results.length === 0) {
-        appendMsg('No results found for "<strong>' + query + '</strong>". Please try different keywords (e.g., "advance", "box", "delivery").', 'bot');
+        appendMsg('No results found for "<strong>' + query + '</strong>". Please try different keywords.', 'bot');
         var optionsDiv = document.createElement('div');
         optionsDiv.className = 'bs-btn-group';
         var backBtn = document.createElement('button');
