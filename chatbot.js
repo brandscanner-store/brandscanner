@@ -3,31 +3,47 @@
   style.innerHTML = `
     /* Flash AI Toggle Button */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: 20px; width: 80px; height: 80px; 
+      position: fixed; bottom: 85px; right: -100px; /* Starts offscreen right */
+      width: 80px; height: 80px; 
       background: transparent; 
       display: flex; align-items: center; justify-content: center; 
-      z-index: 999; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      z-index: 999; cursor: pointer; 
+      animation: walk-in 1.5s ease-out forwards; /* Walk in animation */
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
     
-    /* Bot Image */
-    .bot-image {
-      width: 100%; height: 100%; object-fit: contain; 
+    /* 1. Walk In Animation */
+    @keyframes walk-in {
+      0% { right: -100px; opacity: 0; transform: translateY(10px); }
+      50% { right: 10px; opacity: 1; transform: translateY(-5px); } /* Bounce */
+      75% { right: 15px; transform: translateY(2px); }
+      100% { right: 20px; opacity: 1; transform: translateY(0); }
+    }
+
+    /* 2. Floating Animation (Added via JS after walk-in) */
+    .bs-chat-toggle.floating {
       animation: float 3s ease-in-out infinite;
-      filter: drop-shadow(0px 12px 16px rgba(10, 31, 68, 0.4));
     }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+      50% { transform: translateY(-8px); }
     }
 
-    /* 30-Second Slide Animation */
-    .bs-chat-toggle.wave-long { animation: wave-long-anim 3.5s ease-in-out forwards; }
-    @keyframes wave-long-anim {
-      0% { transform: translateX(80px); opacity: 0; }
-      15% { transform: translateX(0); opacity: 1; }
-      100% { transform: translateX(0) scale(1); }
+    /* 3. Waving Animation (Every 30 seconds) */
+    .bs-chat-toggle.waving {
+      animation: wave-body 0.6s ease-in-out infinite;
+    }
+    @keyframes wave-body {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      25% { transform: rotate(-10deg) translateY(-5px); }
+      75% { transform: rotate(10deg) translateY(-5px); }
+    }
+
+    /* Bot Image */
+    .bot-image {
+      width: 100%; height: 100%; object-fit: contain; 
+      filter: drop-shadow(0px 12px 16px rgba(10, 31, 68, 0.4));
     }
 
     /* Tooltip */
@@ -91,7 +107,7 @@
   `;
   document.head.appendChild(style);
 
-  // 3D Robot Image (Make sure the file name matches your upload)
+  // 3D Robot Image
   var botImgHTML = `<img src="flash-ai.png" class="bot-image" alt="Flash AI">`;
   var headerBotHTML = `<img src="flash-ai.png" class="header-bot-image" alt="Flash AI">`;
 
@@ -123,19 +139,33 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  // First Load Animation & Tooltip (after 1 second)
+  // 1. Wait for walk-in to finish, then start floating
   setTimeout(function() {
-    toggle.classList.add('wave-long');
+    toggle.classList.add('floating');
+  }, 1500); // 1.5 seconds matches the walk-in animation time
+
+  // 2. Show Tooltip initially after walking in
+  setTimeout(function() {
     tooltip.classList.add('show');
     setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
-    setTimeout(function(){ toggle.classList.remove('wave-long'); }, 3600);
-  }, 1000);
+  }, 2000);
 
-  // Repeat Animation Every 30 Seconds
+  // 3. Every 30 Seconds, Wave & Show "Hey!"
   setInterval(function() {
     if (!window_.classList.contains('open')) {
-      toggle.classList.add('wave-long');
-      setTimeout(function(){ toggle.classList.remove('wave-long'); }, 3600);
+      // Pause floating, start waving
+      toggle.classList.remove('floating');
+      toggle.classList.add('waving');
+      tooltip.classList.add('show');
+      
+      // After 3 seconds, stop waving, resume floating
+      setTimeout(function(){ 
+        tooltip.classList.remove('show'); 
+      }, 3000);
+      setTimeout(function(){
+        toggle.classList.remove('waving');
+        toggle.classList.add('floating');
+      }, 3500); 
     }
   }, 30000); 
 
@@ -270,7 +300,6 @@
     }, 2500);
   }
 
-  // SMART SEARCH (Multi-word Keyword based)
   function searchQuestions(query) {
     if (!query || query.trim().length < 2) { return; }
     
@@ -330,15 +359,15 @@
 
   toggle.onclick = function() {
     window_.classList.add('open');
-    toggle.classList.add('hidden-bot'); // Hides floating bot
+    toggle.classList.add('hidden-bot'); 
     tooltip.classList.remove('show');
-    document.body.style.overflow = 'hidden'; // Background Scroll Lock
+    document.body.style.overflow = 'hidden';
     if (body.innerHTML === '') { showCategories(); }
   };
   
   closeBtn.onclick = function() { 
     window_.classList.remove('open'); 
-    toggle.classList.remove('hidden-bot'); // Brings floating bot back
+    toggle.classList.remove('hidden-bot'); 
     document.body.style.overflow = ''; 
   };
 })();
