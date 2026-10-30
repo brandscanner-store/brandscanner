@@ -1,22 +1,29 @@
 (function() {
   var style = document.createElement('style');
   style.innerHTML = `
-    /* Flash AI Toggle Button - No Animation, Just Fixed */
+    /* Flash AI Toggle Button */
     .bs-chat-toggle { 
       position: fixed; 
       bottom: 20px; 
       right: 20px; 
-      width: 65px; 
-      height: 85px; 
+      width: 55px; /* Chhota kar diya */
+      height: 75px; 
       background: transparent; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
       z-index: 999; 
       cursor: pointer; 
+      animation: float 3s ease-in-out infinite; /* Floating animation */
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     
+    /* Float Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
     /* Full Body Robot SVG */
     .robot-svg {
       width: 100%;
@@ -24,9 +31,22 @@
       filter: drop-shadow(0px 5px 10px rgba(10, 31, 68, 0.4));
     }
 
+    /* Wave Hand Animation */
+    .wave-arm {
+      transform-origin: 74px 62px; /* Shoulder joint */
+    }
+    .bs-chat-toggle.waving .wave-arm {
+      animation: wave-hand 0.6s ease-in-out 4; /* 4 baar wave karega */
+    }
+    @keyframes wave-hand {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-25deg); }
+      75% { transform: rotate(20deg); }
+    }
+
     /* Tooltip */
     .bs-chat-tooltip {
-      position: fixed; bottom: 110px; right: 20px; background: #fff; 
+      position: fixed; bottom: 105px; right: 20px; background: #fff; 
       color: #0a1f44; padding: 8px 14px; border-radius: 12px; 
       font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,.1); 
       z-index: 999; border: 1px solid #e5e5e0; opacity: 0; 
@@ -41,8 +61,8 @@
 
     /* Chat Window */
     .bs-chat-window { 
-      position: fixed; bottom: 120px; right: 20px; width: 350px; 
-      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 140px); 
+      position: fixed; bottom: 110px; right: 20px; width: 350px; 
+      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 130px); 
       background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
       z-index: 1000; display: none; flex-direction: column; overflow: hidden; 
       border: 1px solid #e5e5e0; font-family: 'Inter', system-ui, sans-serif; 
@@ -83,7 +103,7 @@
   `;
   document.head.appendChild(style);
 
-  // Full Body Premium Cute Robot SVG (No Background, No Animations)
+  // Full Body Premium Cute Robot SVG (With Waving Arm group)
   var robotSVG = `<svg class="robot-svg" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
     <!-- Shadow -->
     <ellipse cx="50" cy="115" rx="25" ry="5" fill="#0a1f44" opacity="0.15" />
@@ -110,14 +130,14 @@
     
     <!-- Left Arm -->
     <rect x="18" y="62" width="8" height="20" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
-    <!-- Left Hand -->
     <circle cx="22" cy="86" r="5" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
     
-    <!-- Right Arm (Waving) -->
-    <path d="M 74 62 L 85 50" stroke="#0a1f44" stroke-width="3" fill="none"/>
-    <rect x="72" y="58" width="8" height="18" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3" transform="rotate(-30 76 67)"/>
-    <!-- Right Hand -->
-    <circle cx="86" cy="46" r="5" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    <!-- Right Arm (Waving Group) -->
+    <g class="wave-arm">
+      <path d="M 74 62 L 85 50" stroke="#0a1f44" stroke-width="3" fill="none"/>
+      <rect x="72" y="58" width="8" height="18" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3" transform="rotate(-30 76 67)"/>
+      <circle cx="86" cy="46" r="5" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    </g>
     
     <!-- Left Leg -->
     <rect x="36" y="90" width="10" height="20" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
@@ -155,9 +175,19 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  // Tooltip to show on hover/click (Simple)
+  // Tooltip show on hover
   toggle.onmouseover = function() { tooltip.style.opacity = '1'; };
   toggle.onmouseout = function() { tooltip.style.opacity = '0'; };
+
+  // Wave Hand every 30 seconds
+  setInterval(function() {
+    if (!window_.classList.contains('open')) {
+      toggle.classList.add('waving');
+      setTimeout(function(){
+        toggle.classList.remove('waving');
+      }, 2500); // 4 waves x 0.6s = 2.4s
+    }
+  }, 30000); 
 
   var chatData = [
     { icon: '📦', label: 'Quality & Video Call', qs: [
@@ -349,7 +379,7 @@
 
   toggle.onclick = function() {
     window_.classList.add('open');
-    toggle.style.display = 'none'; // Hides static robot
+    toggle.style.display = 'none'; // Hides robot when chat opens
     tooltip.style.opacity = '0';
     document.body.style.overflow = 'hidden';
     if (body.innerHTML === '') { showCategories(); }
@@ -357,7 +387,7 @@
   
   closeBtn.onclick = function() { 
     window_.classList.remove('open'); 
-    toggle.style.display = 'flex'; // Brings static robot back
+    toggle.style.display = 'flex'; // Brings robot back
     document.body.style.overflow = ''; 
   };
 })();
