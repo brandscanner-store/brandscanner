@@ -3,56 +3,23 @@
   style.innerHTML = `
     /* Flash AI Toggle Button */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: 20px; width: 64px; height: 64px; 
-      border-radius: 50%; background: #0a1f44; color: #b3ff00; 
+      position: fixed; bottom: 85px; right: 20px; width: 80px; height: 80px; 
+      background: transparent; 
       display: flex; align-items: center; justify-content: center; 
-      box-shadow: 0 4px 20px rgba(10,31,68,.4); z-index: 999; 
-      cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #b3ff00; 
-      overflow: hidden;
+      z-index: 999; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
     
-    /* Avatar SVG Animations */
-    .bs-chat-toggle svg { width: 46px; height: 46px; overflow: visible; }
-    
-    /* Floating Body */
-    .avatar-float {
+    /* Bot Image */
+    .bot-image {
+      width: 100%; height: 100%; object-fit: contain; 
       animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0px 12px 16px rgba(10, 31, 68, 0.4));
     }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
-    }
-
-    /* Waving Hand on Load */
-    .avatar-hand {
-      transform-origin: 80px 65px;
-      animation: wave-hand 2s ease-in-out 1;
-    }
-    @keyframes wave-hand {
-      0%, 100% { transform: rotate(0deg); }
-      20%, 60% { transform: rotate(-25deg); }
-      40%, 80% { transform: rotate(15deg); }
-    }
-
-    /* Blinking Eyes */
-    .avatar-eye, .header-eye {
-      animation: blink 4s infinite;
-      transform-origin: center;
-    }
-    @keyframes blink {
-      0%, 90%, 100% { transform: scaleY(1); }
-      95% { transform: scaleY(0.1); }
-    }
-
-    /* Antenna Glow */
-    .antenna-glow {
-      animation: glow 2s infinite alternate;
-    }
-    @keyframes glow {
-      from { opacity: 0.7; r: 3px; }
-      to { opacity: 1; r: 5px; }
+      50% { transform: translateY(-6px); }
     }
 
     /* 30-Second Slide Animation */
@@ -65,7 +32,7 @@
 
     /* Tooltip */
     .bs-chat-tooltip {
-      position: fixed; bottom: 100px; right: 95px; background: #fff; 
+      position: fixed; bottom: 110px; right: 95px; background: #fff; 
       color: #0a1f44; padding: 8px 14px; border-radius: 12px; 
       font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,.1); 
       z-index: 999; border: 1px solid #e5e5e0; opacity: 0; 
@@ -81,8 +48,8 @@
 
     /* Chat Window */
     .bs-chat-window { 
-      position: fixed; bottom: 160px; right: 20px; width: 350px; 
-      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 180px); 
+      position: fixed; bottom: 175px; right: 20px; width: 350px; 
+      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 190px); 
       background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
       z-index: 1000; display: none; flex-direction: column; overflow: hidden; 
       border: 1px solid #e5e5e0; font-family: 'Inter', system-ui, sans-serif; 
@@ -91,8 +58,8 @@
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Chat Header with Avatar */
-    .bs-chat-header { background: #0a1f44; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
-    .header-bot-svg { width: 40px; height: 40px; }
+    .bs-chat-header { background: #0a1f44; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+    .header-bot-image { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #b3ff00; border: 2px solid #b3ff00; }
     .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; flex: 1; }
     .bs-chat-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; }
 
@@ -124,45 +91,16 @@
   `;
   document.head.appendChild(style);
 
-  // Floating Avatar (Looking straight)
-  var flashSVG = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="50" cy="50" r="46" fill="#0a1f44" stroke="#b3ff00" stroke-width="3"/>
-    <line x1="50" y1="16" x2="50" y2="28" stroke="#b3ff00" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="50" cy="14" r="4" fill="#b3ff00" class="antenna-glow"/>
-    <g class="avatar-float">
-      <rect x="24" y="30" width="52" height="40" rx="12" fill="#b3ff00"/>
-      <circle cx="38" cy="46" r="6" fill="#0a1f44" class="avatar-eye"/>
-      <circle cx="62" cy="46" r="6" fill="#0a1f44" class="avatar-eye"/>
-      <path d="M 42 56 Q 50 62 58 56" stroke="#0a1f44" stroke-width="3" fill="none" stroke-linecap="round"/>
-    </g>
-    <g class="avatar-hand">
-      <rect x="78" y="55" width="10" height="22" rx="5" fill="#b3ff00" transform="rotate(25 83 66)"/>
-    </g>
-  </svg>`;
-
-  // Header Avatar (Looking down at chat)
-  var headerBotSVG = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="header-bot-svg">
-    <!-- Head -->
-    <rect x="20" y="25" width="60" height="50" rx="15" fill="#b3ff00"/>
-    <!-- Antenna -->
-    <line x1="50" y1="15" x2="50" y2="25" stroke="#b3ff00" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="50" cy="12" r="4" fill="#b3ff00"/>
-    <!-- Eyes looking DOWN -->
-    <circle cx="35" cy="45" r="7" fill="#0a1f44" class="header-eye"/>
-    <circle cx="65" cy="45" r="7" fill="#0a1f44" class="header-eye"/>
-    <!-- Pupils looking down -->
-    <circle cx="35" cy="49" r="3" fill="#b3ff00"/>
-    <circle cx="65" cy="49" r="3" fill="#b3ff00"/>
-    <!-- Smile -->
-    <path d="M 40 60 Q 50 68 60 60" stroke="#0a1f44" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </svg>`;
+  // 3D Robot Image (Make sure the file name matches your upload)
+  var botImgHTML = `<img src="flash-ai.png" class="bot-image" alt="Flash AI">`;
+  var headerBotHTML = `<img src="flash-ai.png" class="header-bot-image" alt="Flash AI">`;
 
   var chatHTML = `
     <div class="bs-chat-tooltip" id="bsChatTooltip">Hey! Need help? 👋</div>
-    <div class="bs-chat-toggle" id="bsChatToggle">${flashSVG}</div>
+    <div class="bs-chat-toggle" id="bsChatToggle">${botImgHTML}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        ${headerBotSVG}
+        ${headerBotHTML}
         <h3>Flash AI</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
