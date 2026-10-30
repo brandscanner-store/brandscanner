@@ -3,12 +3,12 @@
   style.innerHTML = `
     /* Flash AI Toggle Button */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: -100px; /* Starts offscreen right */
+      position: fixed; bottom: 85px; right: -100px; 
       width: 80px; height: 80px; 
       background: transparent; 
       display: flex; align-items: center; justify-content: center; 
       z-index: 999; cursor: pointer; 
-      animation: walk-in 1.5s ease-out forwards; /* Walk in animation */
+      animation: walk-in 1.5s ease-out forwards; 
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
@@ -16,12 +16,12 @@
     /* 1. Walk In Animation */
     @keyframes walk-in {
       0% { right: -100px; opacity: 0; transform: translateY(10px); }
-      50% { right: 10px; opacity: 1; transform: translateY(-5px); } /* Bounce */
+      50% { right: 10px; opacity: 1; transform: translateY(-5px); }
       75% { right: 15px; transform: translateY(2px); }
       100% { right: 20px; opacity: 1; transform: translateY(0); }
     }
 
-    /* 2. Floating Animation (Added via JS after walk-in) */
+    /* 2. Floating Animation */
     .bs-chat-toggle.floating {
       animation: float 3s ease-in-out infinite;
     }
@@ -30,7 +30,7 @@
       50% { transform: translateY(-8px); }
     }
 
-    /* 3. Waving Animation (Every 30 seconds) */
+    /* 3. Waving Animation */
     .bs-chat-toggle.waving {
       animation: wave-body 0.6s ease-in-out infinite;
     }
@@ -107,9 +107,11 @@
   `;
   document.head.appendChild(style);
 
-  // 3D Robot Image
-  var botImgHTML = `<img src="flash-ai.png" class="bot-image" alt="Flash AI">`;
-  var headerBotHTML = `<img src="flash-ai.png" class="header-bot-image" alt="Flash AI">`;
+  // AI Generated Image URL based on your exact prompt
+  var aiImageUrl = 'https://image.pollinations.ai/prompt/A%20cute%2C%20small%2C%20futuristic%20humanoid%20robot.%20Large%2C%20rounded-square%20head%20with%20smooth%20curved%20corners.%20Glossy%20white%20pearl-finish%20outer%20head%20casing.%20Large%20black%2C%20slightly%20curved%20rectangular%20screen%20covering%20the%20face.%20Two%20small%20glowing%20neon-green%20LED%20eyes.%20Compact%2C%20short%20humanoid%20body.%20Short%20white%20arms%20with%20visible%20silver%20metallic%20joints.%20Short%20legs%20with%20rounded%20knee%20joints.%20White%20futuristic%20boots.%20Navy%20blue%20background%2C%20studio%20lighting%2C%20high-quality%203D%20CGI%20render?width=256&height=256&nologo=true&seed=42';
+
+  var botImgHTML = `<img src="${aiImageUrl}" class="bot-image" alt="Flash AI">`;
+  var headerBotHTML = `<img src="${aiImageUrl}" class="header-bot-image" alt="Flash AI">`;
 
   var chatHTML = `
     <div class="bs-chat-tooltip" id="bsChatTooltip">Hey! Need help? 👋</div>
@@ -139,29 +141,18 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  // 1. Wait for walk-in to finish, then start floating
-  setTimeout(function() {
-    toggle.classList.add('floating');
-  }, 1500); // 1.5 seconds matches the walk-in animation time
-
-  // 2. Show Tooltip initially after walking in
+  setTimeout(function() { toggle.classList.add('floating'); }, 1500);
   setTimeout(function() {
     tooltip.classList.add('show');
     setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
   }, 2000);
 
-  // 3. Every 30 Seconds, Wave & Show "Hey!"
   setInterval(function() {
     if (!window_.classList.contains('open')) {
-      // Pause floating, start waving
       toggle.classList.remove('floating');
       toggle.classList.add('waving');
       tooltip.classList.add('show');
-      
-      // After 3 seconds, stop waving, resume floating
-      setTimeout(function(){ 
-        tooltip.classList.remove('show'); 
-      }, 3000);
+      setTimeout(function(){ tooltip.classList.remove('show'); }, 3000);
       setTimeout(function(){
         toggle.classList.remove('waving');
         toggle.classList.add('floating');
