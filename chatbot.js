@@ -7,7 +7,7 @@
       background: transparent; 
       display: flex; align-items: center; justify-content: center; 
       z-index: 999; cursor: pointer; 
-      opacity: 0; /* Starts hidden for walk-in */
+      opacity: 0; 
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
     .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
@@ -108,8 +108,8 @@
   `;
   document.head.appendChild(style);
 
-  // AI Generated Premium Cute Robot Prompt URL
-  var aiImageUrl = 'https://image.pollinations.ai/prompt/cute_premium_3d_humanoid_robot_glossy_white_body_black_screen_face_neon_green_led_eyes_futuristic_pixar_style_3d_render_isolated_on_transparent_background?width=256&height=256&nologo=true&seed=8';
+  // Reliable Premium Cute 3D Robot Image URL (No background)
+  var aiImageUrl = 'https://cdn3d.iconscout.com/3d/premium/thumb/robot-6430991-5653868.png';
 
   var botImgHTML = `<img src="${aiImageUrl}" class="bot-image" alt="Flash AI">`;
   var headerBotHTML = `<img src="${aiImageUrl}" class="header-bot-image" alt="Flash AI">`;
