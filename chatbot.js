@@ -1,72 +1,48 @@
 (function() {
   var style = document.createElement('style');
   style.innerHTML = `
-    /* Flash AI Toggle Button */
+    /* Flash AI Toggle Button - No Animation, Just Fixed */
     .bs-chat-toggle { 
-      position: fixed; bottom: 85px; right: 20px; width: 80px; height: 80px; 
+      position: fixed; 
+      bottom: 20px; 
+      right: 20px; 
+      width: 65px; 
+      height: 85px; 
       background: transparent; 
-      display: flex; align-items: center; justify-content: center; 
-      z-index: 999; cursor: pointer; 
-      opacity: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 999; 
+      cursor: pointer; 
     }
     .bs-chat-toggle:active { transform: scale(0.92); }
-    .bs-chat-toggle.hidden-bot { opacity: 0; pointer-events: none; transform: translateY(-100px) scale(0.5); }
     
-    /* 1. Walk In Animation */
-    .bs-chat-toggle.walk-in {
-      animation: walk-in 1.5s ease-out forwards;
-    }
-    @keyframes walk-in {
-      0% { opacity: 0; transform: translateX(80px) translateY(10px); }
-      50% { opacity: 1; transform: translateX(-5px) translateY(-5px); }
-      100% { opacity: 1; transform: translateX(0) translateY(0); }
-    }
-
-    /* 2. Floating Animation */
-    .bs-chat-toggle.floating {
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    /* 3. Waving Animation */
-    .bs-chat-toggle.waving {
-      animation: wave-body 0.6s ease-in-out infinite;
-    }
-    @keyframes wave-body {
-      0%, 100% { transform: rotate(0deg) translateY(0); }
-      25% { transform: rotate(-10deg) translateY(-5px); }
-      75% { transform: rotate(10deg) translateY(-5px); }
-    }
-
-    /* Bot Image */
-    .bot-image {
-      width: 100%; height: 100%; object-fit: contain; 
-      filter: drop-shadow(0px 10px 15px rgba(10, 31, 68, 0.3));
+    /* Full Body Robot SVG */
+    .robot-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0px 5px 10px rgba(10, 31, 68, 0.4));
     }
 
     /* Tooltip */
     .bs-chat-tooltip {
-      position: fixed; bottom: 110px; right: 95px; background: #fff; 
+      position: fixed; bottom: 110px; right: 20px; background: #fff; 
       color: #0a1f44; padding: 8px 14px; border-radius: 12px; 
       font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,.1); 
       z-index: 999; border: 1px solid #e5e5e0; opacity: 0; 
-      transform: translateX(10px); transition: all 0.3s; pointer-events: none;
+      transition: all 0.3s; pointer-events: none;
       font-family: 'Inter', system-ui, sans-serif;
     }
-    .bs-chat-tooltip.show { opacity: 1; transform: translateX(0); }
     .bs-chat-tooltip::after {
-      content: ''; position: absolute; right: -6px; top: 50%; 
-      transform: translateY(-50%); border-width: 6px 0 6px 6px; 
-      border-style: solid; border-color: transparent transparent transparent #fff;
+      content: ''; position: absolute; right: 20px; bottom: -6px; 
+      border-width: 6px 6px 0 6px; 
+      border-style: solid; border-color: #fff transparent transparent transparent;
     }
 
     /* Chat Window */
     .bs-chat-window { 
-      position: fixed; bottom: 175px; right: 20px; width: 350px; 
-      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 190px); 
+      position: fixed; bottom: 120px; right: 20px; width: 350px; 
+      max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 140px); 
       background: #faf9f6; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
       z-index: 1000; display: none; flex-direction: column; overflow: hidden; 
       border: 1px solid #e5e5e0; font-family: 'Inter', system-ui, sans-serif; 
@@ -74,10 +50,9 @@
     .bs-chat-window.open { display: flex; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Chat Header with Avatar */
-    .bs-chat-header { background: #0a1f44; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
-    .header-bot-image { width: 42px; height: 42px; border-radius: 50%; object-fit: contain; background: #0a1f44; border: 1px solid #b3ff00; }
-    .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; flex: 1; }
+    /* Chat Header */
+    .bs-chat-header { background: #0a1f44; color: #fff; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .bs-chat-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #b3ff00; }
     .bs-chat-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; }
 
     /* Chat Body & Messages */
@@ -108,18 +83,56 @@
   `;
   document.head.appendChild(style);
 
-  // Reliable Premium Cute 3D Robot Image URL (No background)
-  var aiImageUrl = 'https://cdn3d.iconscout.com/3d/premium/thumb/robot-6430991-5653868.png';
-
-  var botImgHTML = `<img src="${aiImageUrl}" class="bot-image" alt="Flash AI">`;
-  var headerBotHTML = `<img src="${aiImageUrl}" class="header-bot-image" alt="Flash AI">`;
+  // Full Body Premium Cute Robot SVG (No Background, No Animations)
+  var robotSVG = `<svg class="robot-svg" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Shadow -->
+    <ellipse cx="50" cy="115" rx="25" ry="5" fill="#0a1f44" opacity="0.15" />
+    
+    <!-- Antenna -->
+    <line x1="50" y1="10" x2="50" y2="20" stroke="#0a1f44" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="50" cy="8" r="4" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    
+    <!-- Head -->
+    <rect x="25" y="20" width="50" height="35" rx="10" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
+    <!-- Face Screen -->
+    <rect x="30" y="25" width="40" height="22" rx="6" fill="#0a1f44"/>
+    <!-- Glowing Eyes -->
+    <circle cx="40" cy="36" r="4" fill="#b3ff00"/>
+    <circle cx="60" cy="36" r="4" fill="#b3ff00"/>
+    <!-- Ears -->
+    <rect x="18" y="30" width="6" height="12" rx="3" fill="#0a1f44"/>
+    <rect x="76" y="30" width="6" height="12" rx="3" fill="#0a1f44"/>
+    
+    <!-- Body -->
+    <rect x="30" y="60" width="40" height="30" rx="8" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
+    <!-- Chest Light -->
+    <circle cx="50" cy="72" r="4" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    
+    <!-- Left Arm -->
+    <rect x="18" y="62" width="8" height="20" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
+    <!-- Left Hand -->
+    <circle cx="22" cy="86" r="5" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    
+    <!-- Right Arm (Waving) -->
+    <path d="M 74 62 L 85 50" stroke="#0a1f44" stroke-width="3" fill="none"/>
+    <rect x="72" y="58" width="8" height="18" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3" transform="rotate(-30 76 67)"/>
+    <!-- Right Hand -->
+    <circle cx="86" cy="46" r="5" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    
+    <!-- Left Leg -->
+    <rect x="36" y="90" width="10" height="20" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
+    <rect x="34" y="108" width="14" height="6" rx="3" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+    
+    <!-- Right Leg -->
+    <rect x="54" y="90" width="10" height="20" rx="4" fill="#ffffff" stroke="#0a1f44" stroke-width="3"/>
+    <rect x="52" y="108" width="14" height="6" rx="3" fill="#b3ff00" stroke="#0a1f44" stroke-width="2"/>
+  </svg>`;
 
   var chatHTML = `
     <div class="bs-chat-tooltip" id="bsChatTooltip">Hey! Need help? 👋</div>
-    <div class="bs-chat-toggle walk-in" id="bsChatToggle">${botImgHTML}</div>
+    <div class="bs-chat-toggle" id="bsChatToggle">${robotSVG}</div>
     <div class="bs-chat-window" id="bsChatWindow">
       <div class="bs-chat-header">
-        ${headerBotHTML}
         <h3>Flash AI</h3>
         <button class="bs-chat-close" id="bsChatClose">✕</button>
       </div>
@@ -142,32 +155,9 @@
   var searchBtn = document.getElementById('bsChatSearchBtn');
   var tooltip = document.getElementById('bsChatTooltip');
 
-  // 1. Walk-in ke baad Float karna shuru kare
-  setTimeout(function() { 
-    toggle.classList.remove('walk-in'); 
-    toggle.classList.add('floating'); 
-  }, 1500);
-
-  // 2. Pehli baar Tooltip dikhao
-  setTimeout(function() {
-    tooltip.classList.add('show');
-    setTimeout(function(){ tooltip.classList.remove('show'); }, 4000);
-  }, 2000);
-
-  // 3. Har 30 second me Wave karo
-  setInterval(function() {
-    if (!window_.classList.contains('open')) {
-      toggle.classList.remove('floating');
-      toggle.classList.add('waving');
-      tooltip.classList.add('show');
-      
-      setTimeout(function(){ tooltip.classList.remove('show'); }, 3000);
-      setTimeout(function(){
-        toggle.classList.remove('waving');
-        toggle.classList.add('floating');
-      }, 3500); 
-    }
-  }, 30000); 
+  // Tooltip to show on hover/click (Simple)
+  toggle.onmouseover = function() { tooltip.style.opacity = '1'; };
+  toggle.onmouseout = function() { tooltip.style.opacity = '0'; };
 
   var chatData = [
     { icon: '📦', label: 'Quality & Video Call', qs: [
@@ -359,15 +349,15 @@
 
   toggle.onclick = function() {
     window_.classList.add('open');
-    toggle.classList.add('hidden-bot'); 
-    tooltip.classList.remove('show');
+    toggle.style.display = 'none'; // Hides static robot
+    tooltip.style.opacity = '0';
     document.body.style.overflow = 'hidden';
     if (body.innerHTML === '') { showCategories(); }
   };
   
   closeBtn.onclick = function() { 
     window_.classList.remove('open'); 
-    toggle.classList.remove('hidden-bot'); 
+    toggle.style.display = 'flex'; // Brings static robot back
     document.body.style.overflow = ''; 
   };
 })();
