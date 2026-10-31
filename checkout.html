@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Checkout - BrandScanner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a1f44'/><text x='50' y='75' font-family='sans-serif' font-size='70' font-weight='bold' fill='%23b3ff00' text-anchor='middle'>BS</text></svg>">
 <style>
 :root{--bg:#faf9f6;--card:#ffffff;--navy:#0a1f44;--green:#b3ff00;--green-dark:#6b8c00;--text:#0a1f44;--muted:#6b7280;--wa:#25d366;--border:#e5e5e0;--danger:#c0392b;--soft:#f4f1ea}
 @media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--card:#141414;--text:#f0f0f0;--muted:#8a8a8a;--navy:#4cc3a4;--border:#222;--soft:#1a1a1a;--danger:#ff6b5b}}
@@ -24,49 +25,36 @@ input,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);borde
 textarea{resize:vertical;min-height:60px}
 button{width:100%;padding:14px;border:none;border-radius:12px;background:var(--navy);color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:14px}
 button:active{opacity:.85}
-button:disabled{opacity:.6;cursor:wait}
 .err{color:var(--danger);font-size:13px;margin-top:8px;min-height:18px}
-
-/* Payment Modes */
 .pay-options{display:flex;gap:10px;margin-top:10px;margin-bottom:16px}
 .pay-opt{flex:1;padding:12px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:all .2s}
 .pay-opt.active{border-color:var(--navy);background:var(--navy);color:#fff}
 .pay-opt span{display:block;font-size:11px;font-weight:400;opacity:.8;margin-top:4px}
-
 .summary{margin-top:16px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
 .summary-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
 .summary-row.total{font-weight:700;font-size:16px;padding-top:8px;border-top:1px solid var(--border);margin-top:6px;color:var(--navy)}
 .summary-row.highlight{color:var(--green-dark);font-weight:700}
-
-/* Premium UPI Box */
 .upi-box{margin-top:16px;padding:20px;background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow: 0 4px 15px rgba(0,0,0,0.05)}
 .upi-amount-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 .rupee-symbol{font-size:28px;font-weight:800;color:var(--navy)}
 .upi-amount-input{width: 130px; font-size:28px; font-weight:800; color:var(--navy); border:none; background:transparent; border-bottom:2px dashed var(--navy); text-align:center; padding:0;}
 .upi-amount-input:focus{outline:none; border-bottom:2px solid var(--navy);}
 .min-advance-note{font-size:11px;color:var(--danger);margin-bottom:16px;font-weight:600;text-align:center;}
-
 .enter-upi-sec{background:var(--bg); padding:16px; border-radius:12px; margin-bottom:16px;}
 .input-group{position:relative; display:flex; align-items:center;}
 .input-group input{padding-right:40px;}
 .verify-icon{position:absolute; right:12px; font-size:18px; display:none;}
 .verify-icon.valid{display:block; color:var(--green-dark);}
 .verify-icon.invalid{display:block; color:var(--danger);}
-
-/* Action Buttons */
 .action-btns{display:flex; flex-direction:column; gap:10px;}
 .pay-upi-btn{display:block;width:100%;padding:16px;background:linear-gradient(135deg, #0a1f44, #1a2f56);color:#fff;text-decoration:none;font-weight:700;font-size:16px;border-radius:12px;box-shadow:0 4px 12px rgba(10,31,68,.2);text-align:center;border:none;cursor:pointer;transition:all .2s;}
 .pay-upi-btn:active{transform:scale(.98)}
-
 .qr-toggle-btn{display:block;width:100%;padding:14px;background:var(--bg);color:var(--navy);border:2px solid var(--navy);text-decoration:none;font-weight:700;font-size:15px;border-radius:12px;text-align:center;cursor:pointer;margin-top:0;}
-
-/* QR Code Container */
 .qr-container{display:none; margin-top:16px; padding:20px; background:#fff; border-radius:12px; border:2px dashed var(--navy); text-align:center;}
 .qr-container.show{display:block; animation: fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0; transform:translateY(-10px)}to{opacity:1; transform:translateY(0)}}
 .qr-container img, .qr-container canvas{border-radius:8px;}
 .qr-text{font-size:13px; color:var(--muted); margin-top:10px; font-weight:600;}
-
 .wa-btn{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:20px}
 .wa-btn:active{opacity:.85}
 .note{color:var(--muted);font-size:12px;line-height:1.5;margin-top:12px;text-align:center}
@@ -78,10 +66,8 @@ button:disabled{opacity:.6;cursor:wait}
 <body>
 <div class="wrap">
   <a href="/" class="back">← Back to products</a>
-
   <div id="loading" class="loading">Loading...</div>
   <div id="notFound" class="error hidden">Product nahi mila. <a href="/">Wapas jao</a></div>
-
   <div id="step1" class="hidden">
     <h2>Order karein</h2>
     <div class="card">
@@ -94,7 +80,6 @@ button:disabled{opacity:.6;cursor:wait}
         </div>
       </div>
     </div>
-
     <div class="card">
       <label for="f-name">Aapka naam</label>
       <input id="f-name" type="text" placeholder="Full name" autocomplete="name">
@@ -110,22 +95,18 @@ button:disabled{opacity:.6;cursor:wait}
       <button id="submitBtn">Proceed to Payment</button>
     </div>
   </div>
-
   <div id="step2" class="hidden">
     <h2>Payment karein</h2>
-    
     <div class="pay-options">
       <div class="pay-opt active" id="opt-cod" onclick="setPayMode('cod')">Cash on Delivery <span>(Pay Advance)</span></div>
       <div class="pay-opt" id="opt-prepaid" onclick="setPayMode('prepaid')">Full Prepaid <span>(Pay Total)</span></div>
     </div>
-
     <div class="upi-box">
       <div class="upi-amount-wrap">
         <span class="rupee-symbol">₹</span>
         <input type="number" id="payAmountInput" class="upi-amount-input" oninput="onAmountChange()" onblur="checkMinAmount()">
       </div>
       <div class="min-advance-note" id="minAdvanceNote">Minimum advance: ₹200</div>
-      
       <div class="enter-upi-sec">
         <label style="margin-top:0;">Apni UPI ID daalein (Optional for App)</label>
         <div class="input-group">
@@ -133,33 +114,24 @@ button:disabled{opacity:.6;cursor:wait}
           <span class="verify-icon" id="verifyIcon">✓</span>
         </div>
       </div>
-      
       <div class="action-btns">
         <a id="payUpiBtn" class="pay-upi-btn" target="_blank" rel="noopener" style="opacity:0.5; pointer-events:none;">💳 Proceed to Pay via App</a>
         <button id="toggleQrBtn" class="qr-toggle-btn" onclick="toggleQR()">📱 Generate QR Code</button>
       </div>
-
       <div class="qr-container" id="qrContainer">
         <div id="qrcode"></div>
         <div class="qr-text">Scan this QR using GPay, PhonePe, Paytm or any UPI app.</div>
       </div>
-
     </div>
-
     <div class="summary">
       <div class="summary-row"><span>Total price</span><span id="sTotal"></span></div>
       <div class="summary-row highlight"><span>Paying Now (UPI)</span><span id="sAdvance">₹0</span></div>
       <div class="summary-row total"><span>Baaki (COD)</span><span id="sCod"></span></div>
     </div>
-
-    <div class="note">
-      ⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot aur UTR ke saath order confirm karein.
-    </div>
-
+    <div class="note">⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot aur UTR ke saath order confirm karein.</div>
     <a id="waBtn" class="wa-btn" target="_blank" rel="noopener">WhatsApp par order confirm karein</a>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 (function () {
@@ -173,7 +145,6 @@ button:disabled{opacity:.6;cursor:wait}
   var product = null;
   var cartItems = [];
   var totalOrderValue = 0;
-  
   var minAdvance = 0;
   var currentPayMode = 'cod';
   var currentCustomer = null;
@@ -184,6 +155,18 @@ button:disabled{opacity:.6;cursor:wait}
   var notFound = document.getElementById('notFound');
   var step1 = document.getElementById('step1');
   var step2 = document.getElementById('step2');
+
+  try {
+    var savedCustomer = localStorage.getItem('bs_customer');
+    if (savedCustomer) {
+      var c = JSON.parse(savedCustomer);
+      if (c.name) document.getElementById('f-name').value = c.name;
+      if (c.phone) document.getElementById('f-phone').value = c.phone;
+      if (c.address) document.getElementById('f-address').value = c.address;
+      if (c.pincode) document.getElementById('f-pincode').value = c.pincode;
+      if (c.landmark) document.getElementById('f-landmark').value = c.landmark;
+    }
+  } catch(e) {}
 
   function calculateMinAdvance(totalValue, itemCount) {
     if (totalValue >= 10000) return Math.round(totalValue * 0.10); 
@@ -214,34 +197,22 @@ button:disabled{opacity:.6;cursor:wait}
       .catch(function () { showNotFound(); });
   }
 
-  function showNotFound() {
-    loading.classList.add('hidden');
-    notFound.classList.remove('hidden');
-  }
-
+  function showNotFound() { loading.classList.add('hidden'); notFound.classList.remove('hidden'); }
   function fmt(n) { return '\u20B9' + Number(n).toLocaleString('en-IN'); }
-
   function renderCartProduct() {
-    loading.classList.add('hidden');
-    step1.classList.remove('hidden');
+    loading.classList.add('hidden'); step1.classList.remove('hidden');
     document.getElementById('pname').textContent = cartItems.length + ' Watches';
     document.getElementById('pcode').textContent = 'Multiple items from cart';
     document.getElementById('pprice').textContent = fmt(totalOrderValue);
   }
-
   function renderSingleProduct() {
-    loading.classList.add('hidden');
-    step1.classList.remove('hidden');
+    loading.classList.add('hidden'); step1.classList.remove('hidden');
     var thumb = document.getElementById('pthumb');
     if (product.image) {
-      var img = document.createElement('img');
-      img.src = product.image;
-      img.alt = product.name;
+      var img = document.createElement('img'); img.src = product.image; img.alt = product.name;
       img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); thumb.textContent = 'No img'; };
       thumb.appendChild(img);
-    } else {
-      thumb.textContent = 'No img';
-    }
+    } else { thumb.textContent = 'No img'; }
     document.getElementById('pname').textContent = product.name;
     document.getElementById('pcode').textContent = 'Code: ' + product.code;
     document.getElementById('pprice').textContent = fmt(product.price);
@@ -253,18 +224,18 @@ button:disabled{opacity:.6;cursor:wait}
     var address = document.getElementById('f-address').value.trim();
     var pincode = document.getElementById('f-pincode').value.trim();
     var landmark = document.getElementById('f-landmark').value.trim();
-    var errEl = document.getElementById('formErr');
-    errEl.textContent = '';
+    var errEl = document.getElementById('formErr'); errEl.textContent = '';
 
     if (name.length < 2) { errEl.textContent = 'Naam daalein.'; return; }
     if (!/^[6-9]\d{9}$/.test(phone)) { errEl.textContent = 'Sahi 10-digit mobile number daalein.'; return; }
     if (address.length < 10) { errEl.textContent = 'Poora delivery address daalein.'; return; }
     if (!/^\d{6}$/.test(pincode)) { errEl.textContent = 'Sahi 6-digit Pincode daalein.'; return; }
 
-    currentCustomer = { name: name, phone: phone, address: address, pincode: pincode, landmark: landmark };
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
-    
+    var customerData = { name: name, phone: phone, address: address, pincode: pincode, landmark: landmark };
+    try { localStorage.setItem('bs_customer', JSON.stringify(customerData)); } catch(e) {}
+
+    currentCustomer = customerData;
+    step1.classList.add('hidden'); step2.classList.remove('hidden');
     document.getElementById('sTotal').textContent = fmt(totalOrderValue);
     setPayMode('cod');
   });
@@ -273,20 +244,12 @@ button:disabled{opacity:.6;cursor:wait}
     currentPayMode = m;
     document.getElementById('opt-cod').classList.toggle('active', m === 'cod');
     document.getElementById('opt-prepaid').classList.toggle('active', m === 'prepaid');
-
-    var input = document.getElementById('payAmountInput');
-    var minNote = document.getElementById('minAdvanceNote');
-
+    var input = document.getElementById('payAmountInput'), minNote = document.getElementById('minAdvanceNote');
     if (m === 'cod') {
-      input.readOnly = false;
-      input.value = minAdvance;
-      input.min = minAdvance;
-      minNote.style.display = 'block';
-      minNote.textContent = 'Minimum advance: ' + fmt(minAdvance);
+      input.readOnly = false; input.value = minAdvance; input.min = minAdvance;
+      minNote.style.display = 'block'; minNote.textContent = 'Minimum advance: ' + fmt(minAdvance);
     } else {
-      input.readOnly = true; 
-      input.value = totalOrderValue;
-      input.min = totalOrderValue;
+      input.readOnly = true; input.value = totalOrderValue; input.min = totalOrderValue;
       minNote.style.display = 'none';
     }
     onAmountChange();
@@ -295,125 +258,61 @@ button:disabled{opacity:.6;cursor:wait}
   window.onAmountChange = function() {
     var amt = Number(document.getElementById('payAmountInput').value);
     if (!isFinite(amt) || amt < 0) amt = 0;
-    var cod = totalOrderValue - amt;
-    if (cod < 0) cod = 0;
-    
+    var cod = totalOrderValue - amt; if (cod < 0) cod = 0;
     document.getElementById('sAdvance').textContent = fmt(amt);
     document.getElementById('sCod').textContent = fmt(cod);
     updateLinks(amt, cod);
-    
-    if (isQrVisible) {
-      generateQR(amt);
-    }
+    if (isQrVisible) generateQR(amt);
   };
 
   window.checkMinAmount = function() {
-    var input = document.getElementById('payAmountInput');
-    var amt = Number(input.value);
+    var input = document.getElementById('payAmountInput'), amt = Number(input.value);
     if (currentPayMode === 'cod' && (amt < minAdvance || isNaN(amt))) {
       alert('Minimum advance ' + fmt(minAdvance) + ' dena zaroori hai.');
-      input.value = minAdvance;
-      onAmountChange();
+      input.value = minAdvance; onAmountChange();
     }
   };
 
   window.validateUserUpi = function() {
-    var input = document.getElementById('userUpiId');
-    var icon = document.getElementById('verifyIcon');
-    var btn = document.getElementById('payUpiBtn');
-    var val = input.value.trim();
+    var input = document.getElementById('userUpiId'), icon = document.getElementById('verifyIcon'), btn = document.getElementById('payUpiBtn');
+    var val = input.value.trim(), regex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+    if (val.length === 0) { icon.className = 'verify-icon'; isUpiValid = false; }
+    else if (regex.test(val)) { icon.className = 'verify-icon valid'; icon.textContent = '✅'; isUpiValid = true; }
+    else { icon.className = 'verify-icon invalid'; icon.textContent = '❌'; isUpiValid = false; }
 
-    var regex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
-
-    if (val.length === 0) {
-      icon.className = 'verify-icon';
-      isUpiValid = false;
-    } else if (regex.test(val)) {
-      icon.className = 'verify-icon valid';
-      icon.textContent = '✅';
-      isUpiValid = true;
-    } else {
-      icon.className = 'verify-icon invalid';
-      icon.textContent = '❌';
-      isUpiValid = false;
-    }
-
-    if (isUpiValid) {
-      btn.style.opacity = '1';
-      btn.style.pointerEvents = 'auto';
-      btn.textContent = '💳 Proceed to Pay via App';
-    } else {
-      btn.style.opacity = '0.5';
-      btn.style.pointerEvents = 'none';
-      btn.textContent = 'Enter UPI ID to Pay';
-    }
+    if (isUpiValid) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.textContent = '💳 Proceed to Pay via App'; }
+    else { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; btn.textContent = 'Enter UPI ID to Pay'; }
     onAmountChange();
   };
 
   window.toggleQR = function() {
-    var qrContainer = document.getElementById('qrContainer');
-    var btn = document.getElementById('toggleQrBtn');
-    
-    if (isQrVisible) {
-      qrContainer.classList.remove('show');
-      btn.textContent = '📱 Generate QR Code';
-      isQrVisible = false;
-    } else {
-      qrContainer.classList.add('show');
-      btn.textContent = '❌ Hide QR Code';
-      isQrVisible = true;
-      var amt = Number(document.getElementById('payAmountInput').value);
-      generateQR(amt);
-    }
+    var qrContainer = document.getElementById('qrContainer'), btn = document.getElementById('toggleQrBtn');
+    if (isQrVisible) { qrContainer.classList.remove('show'); btn.textContent = '📱 Generate QR Code'; isQrVisible = false; }
+    else { qrContainer.classList.add('show'); btn.textContent = '❌ Hide QR Code'; isQrVisible = true; generateQR(Number(document.getElementById('payAmountInput').value)); }
   };
 
   function generateQR(amt) {
     var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
     var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
-    
-    var qrcodeDiv = document.getElementById('qrcode');
-    qrcodeDiv.innerHTML = '';
-    
-    try {
-      new QRCode(qrcodeDiv, {
-        text: upiLink,
-        width: 200,
-        height: 200,
-        colorDark: '#0a1f44',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(e) {
-      qrcodeDiv.textContent = 'QR generate nahi hua.';
-    }
+    var qrcodeDiv = document.getElementById('qrcode'); qrcodeDiv.innerHTML = '';
+    try { new QRCode(qrcodeDiv, { text: upiLink, width: 200, height: 200, colorDark: '#0a1f44', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e) { qrcodeDiv.textContent = 'QR generate nahi hua.'; }
   }
 
   function updateLinks(amt, cod) {
     var userUpi = document.getElementById('userUpiId').value.trim();
     var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
-    
     var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
     if (isUpiValid && userUpi) { upiLink += '&payer_vpa=' + encodeURIComponent(userUpi); }
     document.getElementById('payUpiBtn').href = upiLink;
 
     var pName = (mode === 'cart') ? (cartItems.length + ' Watches') : product.name;
     var msg = 'Hi BrandScanner, order karna hai:\n\n';
-    msg += '📦 *' + pName + '*\n';
-    if (mode !== 'cart') msg += 'Code: ' + product.code + '\n';
-    msg += 'Total: ' + fmt(totalOrderValue) + '\n';
-    msg += 'Payment Mode: ' + (currentPayMode === 'cod' ? 'Partial (COD)' : 'Full Prepaid') + '\n';
-    msg += 'Paying Now: ' + fmt(amt) + ' (UPI)\n';
-    msg += 'Remaining COD: ' + fmt(cod) + '\n';
-    if (isUpiValid && userUpi) msg += 'My UPI: ' + userUpi + '\n\n';
-    else msg += '\n';
-    
-    msg += '👤 ' + currentCustomer.name + '\n';
-    msg += '📱 ' + currentCustomer.phone + '\n';
-    msg += '🏠 ' + currentCustomer.address + '\n';
-    msg += 'Pincode: ' + currentCustomer.pincode + '\n';
+    msg += '📦 *' + pName + '*\n'; if (mode !== 'cart') msg += 'Code: ' + product.code + '\n';
+    msg += 'Total: ' + fmt(totalOrderValue) + '\nPayment Mode: ' + (currentPayMode === 'cod' ? 'Partial (COD)' : 'Full Prepaid') + '\nPaying Now: ' + fmt(amt) + ' (UPI)\nRemaining COD: ' + fmt(cod) + '\n';
+    if (isUpiValid && userUpi) msg += 'My UPI: ' + userUpi + '\n\n'; else msg += '\n';
+    msg += '👤 ' + currentCustomer.name + '\n📱 ' + currentCustomer.phone + '\n🏠 ' + currentCustomer.address + '\nPincode: ' + currentCustomer.pincode + '\n';
     if (currentCustomer.landmark) msg += 'Landmark: ' + currentCustomer.landmark + '\n';
     msg += '\n_UTR/Screenshot attach kiya hai._';
-
     document.getElementById('waBtn').href = 'https://wa.me/' + ADMIN_PHONE + '?text=' + encodeURIComponent(msg);
   }
 })();
