@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Product — BrandScanner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a1f44'/><text x='50' y='75' font-family='sans-serif' font-size='70' font-weight='bold' fill='%23b3ff00' text-anchor='middle'>BS</text></svg>">
 <style>
 :root{--bg:#faf9f6;--card:#fff;--navy:#0a1f44;--navy-light:#1a2f56;--green:#b3ff00;--green-dark:#6b8c00;--text:#0a1f44;--muted:#6b7280;--wa:#25d366;--border:#e5e5e0;--red:#d9251a;--soft:#f4f1ea}
 @media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--card:#141414;--text:#f0f0f0;--navy:#4cc3a4;--muted:#8a8a8a;--border:#222;--soft:#1a1a1a}}
@@ -88,14 +89,14 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:
 <div class="top-strip">Free Shipping · <b>Cash on Delivery</b> · 7-Day Exchange</div>
 <nav class="top-nav">
   <div class="top-nav-inner">
-    <a href="index.html" class="back">← Back</a>
+    <a href="/" class="back">← Back</a>
     <span class="code-nav" id="codeNav"></span>
     <a href="cart.html" class="nav-cart">🛒 <span class="cart-badge" id="cartBadge">0</span></a>
   </div>
 </nav>
 <div class="wrap">
   <div id="loading" class="loading">Loading...</div>
-  <div id="error" class="error" hidden>Product not found. <a href="index.html">Go back</a></div>
+  <div id="error" class="error" hidden>Product not found. <a href="/">Go back</a></div>
   <div id="content" hidden>
     <div class="gallery">
       <div class="gallery-track" id="track"></div>
@@ -136,11 +137,11 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:
       <p id="descText"></p>
     </div>
     <div class="similar-section">
-      <div class="similar-header"><h3>You May Also Like</h3><a href="index.html" style="color:var(--muted);font-size:11px;text-decoration:none;">View All →</a></div>
+      <div class="similar-header"><h3>You May Also Like</h3><a href="/" style="color:var(--muted);font-size:11px;text-decoration:none;">View All →</a></div>
       <div class="similar-scroll" id="similarScroll"></div>
     </div>
     <div class="similar-section">
-      <div class="similar-header"><h3>Suggested For You</h3><a href="index.html" style="color:var(--muted);font-size:11px;text-decoration:none;">View All →</a></div>
+      <div class="similar-header"><h3>Suggested For You</h3><a href="/" style="color:var(--muted);font-size:11px;text-decoration:none;">View All →</a></div>
       <div class="similar-scroll" id="suggestedScroll"></div>
     </div>
     <div class="footer-info">BrandScanner · Independent reseller · Not affiliated with any brand<br>Need help? <a href="https://wa.me/917990643295" style="color:var(--green-dark);text-decoration:none;font-weight:600;">WhatsApp +91 79906 43295</a></div>
@@ -176,22 +177,18 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:
   updateCartBadge();
 
   function showToast(msg){
-    var t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
     setTimeout(function(){ t.classList.remove('show'); }, 2000);
   }
 
   function addToCart(p){
     var cart = JSON.parse(localStorage.getItem('bs_cart') || '[]');
     var exists = cart.find(function(item){ return item.code === p.code; });
-    if (exists){
-      showToast('Item already in cart!');
-    } else {
+    if (exists){ showToast('Item already in cart!'); }
+    else {
       cart.push({ code: p.code, name: p.name, price: p.price, image: p.image });
       localStorage.setItem('bs_cart', JSON.stringify(cart));
-      updateCartBadge();
-      showToast('Item added to cart!');
+      updateCartBadge(); showToast('Item added to cart!');
     }
   }
 
@@ -221,8 +218,7 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:
 
   function render(p){
     document.title = (p.name || 'Product') + ' — BrandScanner';
-    loading.hidden = true;
-    content.hidden = false;
+    loading.hidden = true; content.hidden = false;
     document.getElementById('codeNav').textContent = p.code || '';
     buildGallery(galleryList(p), p.name);
     setupVideo(p.video);
@@ -243,8 +239,7 @@ body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:
 
   function setupVideo(videoField){
     if (!videoField) return;
-    var filename = String(videoField).trim();
-    if (!filename) return;
+    var filename = String(videoField).trim(); if (!filename) return;
     var url = /^https?:\/\//i.test(filename) ? filename : (VIDEO_BASE + filename);
     var btn = document.getElementById('videoBtn'), fs = document.getElementById('videoFs'), mount = document.getElementById('videoMount'), closeBtn = document.getElementById('videoClose');
     btn.hidden = false;
