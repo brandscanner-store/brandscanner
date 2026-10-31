@@ -11,8 +11,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
 .wrap{max-width:600px;margin:0 auto;padding:16px 16px 40px}
-.back{display:inline-block;padding:8px 0;color:var(--navy);text-decoration:none;font-weight:700;font-size:15px}
-h2{margin:16px 0 8px;font-size:18px;color:var(--navy)}
+.back{display:inline-block;padding:8px 0;color:var(--navy);text-decoration:none;font-weight:700;font-size:14px}
+h2{margin:16px 0 8px;font-size:20px;color:var(--navy)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
 .product-row{display:flex;gap:10px;align-items:center}
 .thumb{flex:0 0 64px;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
@@ -34,27 +34,34 @@ button:active{opacity:.85}
 .summary-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
 .summary-row.total{font-weight:700;font-size:16px;padding-top:8px;border-top:1px solid var(--border);margin-top:6px;color:var(--navy)}
 .summary-row.highlight{color:var(--green-dark);font-weight:700}
-.upi-box{margin-top:16px;padding:20px;background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow: 0 4px 15px rgba(0,0,0,0.05)}
+
+/* Premium Payment UI */
+.upi-box{margin-top:16px;padding:20px;background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow: 0 4px 15px rgba(0,0,0,0.05);text-align:center;}
+
+/* Secure Banner & Logos */
+.secure-banner{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--green-dark);font-weight:700;margin-bottom:12px;}
+.upi-logos{display:flex;justify-content:center;gap:10px;margin-bottom:16px;}
+.upi-logos img{height:24px; width:auto; object-fit:contain;}
+
 .upi-amount-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 .rupee-symbol{font-size:28px;font-weight:800;color:var(--navy)}
 .upi-amount-input{width: 130px; font-size:28px; font-weight:800; color:var(--navy); border:none; background:transparent; border-bottom:2px dashed var(--navy); text-align:center; padding:0;}
 .upi-amount-input:focus{outline:none; border-bottom:2px solid var(--navy);}
-.min-advance-note{font-size:11px;color:var(--danger);margin-bottom:16px;font-weight:600;text-align:center;}
-.enter-upi-sec{background:var(--bg); padding:16px; border-radius:12px; margin-bottom:16px;}
-.input-group{position:relative; display:flex; align-items:center;}
-.input-group input{padding-right:40px;}
-.verify-icon{position:absolute; right:12px; font-size:18px; display:none;}
-.verify-icon.valid{display:block; color:var(--green-dark);}
-.verify-icon.invalid{display:block; color:var(--danger);}
-.action-btns{display:flex; flex-direction:column; gap:10px;}
+.min-advance-note{font-size:11px;color:var(--danger);margin-bottom:20px;font-weight:600;}
+
+.action-btns{display:flex; flex-direction:column; gap:10px; margin-bottom:16px;}
 .pay-upi-btn{display:block;width:100%;padding:16px;background:linear-gradient(135deg, #0a1f44, #1a2f56);color:#fff;text-decoration:none;font-weight:700;font-size:16px;border-radius:12px;box-shadow:0 4px 12px rgba(10,31,68,.2);text-align:center;border:none;cursor:pointer;transition:all .2s;}
 .pay-upi-btn:active{transform:scale(.98)}
 .qr-toggle-btn{display:block;width:100%;padding:14px;background:var(--bg);color:var(--navy);border:2px solid var(--navy);text-decoration:none;font-weight:700;font-size:15px;border-radius:12px;text-align:center;cursor:pointer;margin-top:0;}
+
 .qr-container{display:none; margin-top:16px; padding:20px; background:#fff; border-radius:12px; border:2px dashed var(--navy); text-align:center;}
 .qr-container.show{display:block; animation: fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0; transform:translateY(-10px)}to{opacity:1; transform:translateY(0)}}
 .qr-container img, .qr-container canvas{border-radius:8px;}
 .qr-text{font-size:13px; color:var(--muted); margin-top:10px; font-weight:600;}
+
+.refund-note{font-size:12px; color:var(--muted); margin-top:16px; line-height:1.5; font-weight:500;}
+
 .wa-btn{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:20px}
 .wa-btn:active{opacity:.85}
 .note{color:var(--muted);font-size:12px;line-height:1.5;margin-top:12px;text-align:center}
@@ -67,9 +74,10 @@ button:active{opacity:.85}
 <div class="wrap">
   <a href="/" class="back">← Back to products</a>
   <div id="loading" class="loading">Loading...</div>
-  <div id="notFound" class="error hidden">Product nahi mila. <a href="/">Wapas jao</a></div>
+  <div id="notFound" class="error hidden">Product not found. <a href="/">Go back</a></div>
+  
   <div id="step1" class="hidden">
-    <h2>Order karein</h2>
+    <h2>Shipping Details</h2>
     <div class="card">
       <div class="product-row">
         <div class="thumb" id="pthumb"></div>
@@ -81,55 +89,70 @@ button:active{opacity:.85}
       </div>
     </div>
     <div class="card">
-      <label for="f-name">Aapka naam</label>
-      <input id="f-name" type="text" placeholder="Full name" autocomplete="name">
-      <label for="f-phone">Mobile number (WhatsApp)</label>
-      <input id="f-phone" type="tel" placeholder="10-digit mobile" inputmode="numeric" maxlength="10" autocomplete="tel">
-      <label for="f-address">Delivery address</label>
+      <label for="f-name">Full Name</label>
+      <input id="f-name" type="text" placeholder="Enter your full name" autocomplete="name">
+      <label for="f-phone">Mobile Number (WhatsApp)</label>
+      <input id="f-phone" type="tel" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10" autocomplete="tel">
+      <label for="f-address">Delivery Address</label>
       <textarea id="f-address" placeholder="House no, street, area, city" autocomplete="street-address"></textarea>
       <label for="f-pincode">Pincode</label>
       <input id="f-pincode" type="tel" placeholder="6-digit Pincode" inputmode="numeric" maxlength="6">
-      <label for="f-landmark">Landmark (optional)</label>
-      <input id="f-landmark" type="text" placeholder="Near by building / area">
+      <label for="f-landmark">Landmark (Optional)</label>
+      <input id="f-landmark" type="text" placeholder="Nearby building / area">
       <div class="err" id="formErr"></div>
       <button id="submitBtn">Proceed to Payment</button>
     </div>
   </div>
+
   <div id="step2" class="hidden">
-    <h2>Payment karein</h2>
+    <h2>Complete Your Payment</h2>
+    
     <div class="pay-options">
-      <div class="pay-opt active" id="opt-cod" onclick="setPayMode('cod')">Cash on Delivery <span>(Pay Advance)</span></div>
+      <div class="pay-opt active" id="opt-cod" onclick="setPayMode('cod')">Cash on Delivery <span>(Partial Pay)</span></div>
       <div class="pay-opt" id="opt-prepaid" onclick="setPayMode('prepaid')">Full Prepaid <span>(Pay Total)</span></div>
     </div>
+
     <div class="upi-box">
+      <div class="secure-banner">🔒 Secure & Encrypted Payment</div>
+      
+      <div class="upi-logos">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Pay_%28GPay%29_Logo.svg" alt="GPay">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm">
+      </div>
+
       <div class="upi-amount-wrap">
         <span class="rupee-symbol">₹</span>
         <input type="number" id="payAmountInput" class="upi-amount-input" oninput="onAmountChange()" onblur="checkMinAmount()">
       </div>
       <div class="min-advance-note" id="minAdvanceNote">Minimum advance: ₹200</div>
-      <div class="enter-upi-sec">
-        <label style="margin-top:0;">Apni UPI ID daalein (Optional for App)</label>
-        <div class="input-group">
-          <input type="text" id="userUpiId" placeholder="Enter your UPI ID" oninput="validateUserUpi()">
-          <span class="verify-icon" id="verifyIcon">✓</span>
-        </div>
-      </div>
+      
       <div class="action-btns">
-        <a id="payUpiBtn" class="pay-upi-btn" target="_blank" rel="noopener" style="opacity:0.5; pointer-events:none;">💳 Proceed to Pay via App</a>
-        <button id="toggleQrBtn" class="qr-toggle-btn" onclick="toggleQR()">📱 Generate QR Code</button>
+        <a id="payUpiBtn" class="pay-upi-btn" target="_blank" rel="noopener">Pay via UPI App</a>
+        <button id="toggleQrBtn" class="qr-toggle-btn" onclick="toggleQR()">Generate QR Code</button>
       </div>
+
       <div class="qr-container" id="qrContainer">
         <div id="qrcode"></div>
-        <div class="qr-text">Scan this QR using GPay, PhonePe, Paytm or any UPI app.</div>
+        <div class="qr-text">Scan this QR code with any UPI app.</div>
+      </div>
+
+      <div class="refund-note">
+        * The advance amount is fully refundable if the order is not shipped or dispatched.
       </div>
     </div>
+
     <div class="summary">
-      <div class="summary-row"><span>Total price</span><span id="sTotal"></span></div>
+      <div class="summary-row"><span>Total Price</span><span id="sTotal"></span></div>
       <div class="summary-row highlight"><span>Paying Now (UPI)</span><span id="sAdvance">₹0</span></div>
-      <div class="summary-row total"><span>Baaki (COD)</span><span id="sCod"></span></div>
+      <div class="summary-row total"><span>Remaining (COD)</span><span id="sCod"></span></div>
     </div>
-    <div class="note">⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot aur UTR ke saath order confirm karein.</div>
-    <a id="waBtn" class="wa-btn" target="_blank" rel="noopener">WhatsApp par order confirm karein</a>
+
+    <div class="note">
+      After payment, click the WhatsApp button below to confirm your order.
+    </div>
+
+    <a id="waBtn" class="wa-btn" target="_blank" rel="noopener">Confirm Order on WhatsApp</a>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -148,7 +171,6 @@ button:active{opacity:.85}
   var minAdvance = 0;
   var currentPayMode = 'cod';
   var currentCustomer = null;
-  var isUpiValid = false;
   var isQrVisible = false;
 
   var loading = document.getElementById('loading');
@@ -156,6 +178,7 @@ button:active{opacity:.85}
   var step1 = document.getElementById('step1');
   var step2 = document.getElementById('step2');
 
+  // Auto-fill from LocalStorage
   try {
     var savedCustomer = localStorage.getItem('bs_customer');
     if (savedCustomer) {
@@ -199,12 +222,14 @@ button:active{opacity:.85}
 
   function showNotFound() { loading.classList.add('hidden'); notFound.classList.remove('hidden'); }
   function fmt(n) { return '\u20B9' + Number(n).toLocaleString('en-IN'); }
+  
   function renderCartProduct() {
     loading.classList.add('hidden'); step1.classList.remove('hidden');
     document.getElementById('pname').textContent = cartItems.length + ' Watches';
     document.getElementById('pcode').textContent = 'Multiple items from cart';
     document.getElementById('pprice').textContent = fmt(totalOrderValue);
   }
+  
   function renderSingleProduct() {
     loading.classList.add('hidden'); step1.classList.remove('hidden');
     var thumb = document.getElementById('pthumb');
@@ -226,10 +251,10 @@ button:active{opacity:.85}
     var landmark = document.getElementById('f-landmark').value.trim();
     var errEl = document.getElementById('formErr'); errEl.textContent = '';
 
-    if (name.length < 2) { errEl.textContent = 'Naam daalein.'; return; }
-    if (!/^[6-9]\d{9}$/.test(phone)) { errEl.textContent = 'Sahi 10-digit mobile number daalein.'; return; }
-    if (address.length < 10) { errEl.textContent = 'Poora delivery address daalein.'; return; }
-    if (!/^\d{6}$/.test(pincode)) { errEl.textContent = 'Sahi 6-digit Pincode daalein.'; return; }
+    if (name.length < 2) { errEl.textContent = 'Please enter your name.'; return; }
+    if (!/^[6-9]\d{9}$/.test(phone)) { errEl.textContent = 'Please enter a valid 10-digit mobile number.'; return; }
+    if (address.length < 10) { errEl.textContent = 'Please enter your full delivery address.'; return; }
+    if (!/^\d{6}$/.test(pincode)) { errEl.textContent = 'Please enter a valid 6-digit pincode.'; return; }
 
     var customerData = { name: name, phone: phone, address: address, pincode: pincode, landmark: landmark };
     try { localStorage.setItem('bs_customer', JSON.stringify(customerData)); } catch(e) {}
@@ -259,61 +284,56 @@ button:active{opacity:.85}
     var amt = Number(document.getElementById('payAmountInput').value);
     if (!isFinite(amt) || amt < 0) amt = 0;
     var cod = totalOrderValue - amt; if (cod < 0) cod = 0;
+    
     document.getElementById('sAdvance').textContent = fmt(amt);
     document.getElementById('sCod').textContent = fmt(cod);
-    updateLinks(amt, cod);
+    
+    // Update UPI App Button Link
+    var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
+    var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
+    document.getElementById('payUpiBtn').href = upiLink;
+
+    // Update QR Code if visible
     if (isQrVisible) generateQR(amt);
+
+    // Update WhatsApp Link
+    var pName = (mode === 'cart') ? (cartItems.length + ' Watches') : product.name;
+    var msg = 'Hi BrandScanner, I want to place an order:\n\n';
+    msg += '📦 *' + pName + '*\n'; if (mode !== 'cart') msg += 'Code: ' + product.code + '\n';
+    msg += 'Total: ' + fmt(totalOrderValue) + '\nPayment Mode: ' + (currentPayMode === 'cod' ? 'Partial Pay (COD)' : 'Full Prepaid') + '\nPaying Now: ' + fmt(amt) + ' (UPI)\nRemaining COD: ' + fmt(cod) + '\n\n';
+    msg += '👤 ' + currentCustomer.name + '\n📱 ' + currentCustomer.phone + '\n🏠 ' + currentCustomer.address + '\nPincode: ' + currentCustomer.pincode + '\n';
+    if (currentCustomer.landmark) msg += 'Landmark: ' + currentCustomer.landmark + '\n';
+    msg += '\n_UTR/Screenshot attached._';
+    document.getElementById('waBtn').href = 'https://wa.me/' + ADMIN_PHONE + '?text=' + encodeURIComponent(msg);
   };
 
   window.checkMinAmount = function() {
     var input = document.getElementById('payAmountInput'), amt = Number(input.value);
     if (currentPayMode === 'cod' && (amt < minAdvance || isNaN(amt))) {
-      alert('Minimum advance ' + fmt(minAdvance) + ' dena zaroori hai.');
+      alert('Minimum advance of ' + fmt(minAdvance) + ' is required.');
       input.value = minAdvance; onAmountChange();
     }
   };
 
-  window.validateUserUpi = function() {
-    var input = document.getElementById('userUpiId'), icon = document.getElementById('verifyIcon'), btn = document.getElementById('payUpiBtn');
-    var val = input.value.trim(), regex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
-    if (val.length === 0) { icon.className = 'verify-icon'; isUpiValid = false; }
-    else if (regex.test(val)) { icon.className = 'verify-icon valid'; icon.textContent = '✅'; isUpiValid = true; }
-    else { icon.className = 'verify-icon invalid'; icon.textContent = '❌'; isUpiValid = false; }
-
-    if (isUpiValid) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.textContent = '💳 Proceed to Pay via App'; }
-    else { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; btn.textContent = 'Enter UPI ID to Pay'; }
-    onAmountChange();
-  };
-
   window.toggleQR = function() {
     var qrContainer = document.getElementById('qrContainer'), btn = document.getElementById('toggleQrBtn');
-    if (isQrVisible) { qrContainer.classList.remove('show'); btn.textContent = '📱 Generate QR Code'; isQrVisible = false; }
-    else { qrContainer.classList.add('show'); btn.textContent = '❌ Hide QR Code'; isQrVisible = true; generateQR(Number(document.getElementById('payAmountInput').value)); }
+    if (isQrVisible) { 
+      qrContainer.classList.remove('show'); 
+      btn.textContent = 'Generate QR Code'; 
+      isQrVisible = false; 
+    } else { 
+      qrContainer.classList.add('show'); 
+      btn.textContent = 'Hide QR Code'; 
+      isQrVisible = true; 
+      generateQR(Number(document.getElementById('payAmountInput').value)); 
+    }
   };
 
   function generateQR(amt) {
     var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
     var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
     var qrcodeDiv = document.getElementById('qrcode'); qrcodeDiv.innerHTML = '';
-    try { new QRCode(qrcodeDiv, { text: upiLink, width: 200, height: 200, colorDark: '#0a1f44', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e) { qrcodeDiv.textContent = 'QR generate nahi hua.'; }
-  }
-
-  function updateLinks(amt, cod) {
-    var userUpi = document.getElementById('userUpiId').value.trim();
-    var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
-    var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
-    if (isUpiValid && userUpi) { upiLink += '&payer_vpa=' + encodeURIComponent(userUpi); }
-    document.getElementById('payUpiBtn').href = upiLink;
-
-    var pName = (mode === 'cart') ? (cartItems.length + ' Watches') : product.name;
-    var msg = 'Hi BrandScanner, order karna hai:\n\n';
-    msg += '📦 *' + pName + '*\n'; if (mode !== 'cart') msg += 'Code: ' + product.code + '\n';
-    msg += 'Total: ' + fmt(totalOrderValue) + '\nPayment Mode: ' + (currentPayMode === 'cod' ? 'Partial (COD)' : 'Full Prepaid') + '\nPaying Now: ' + fmt(amt) + ' (UPI)\nRemaining COD: ' + fmt(cod) + '\n';
-    if (isUpiValid && userUpi) msg += 'My UPI: ' + userUpi + '\n\n'; else msg += '\n';
-    msg += '👤 ' + currentCustomer.name + '\n📱 ' + currentCustomer.phone + '\n🏠 ' + currentCustomer.address + '\nPincode: ' + currentCustomer.pincode + '\n';
-    if (currentCustomer.landmark) msg += 'Landmark: ' + currentCustomer.landmark + '\n';
-    msg += '\n_UTR/Screenshot attach kiya hai._';
-    document.getElementById('waBtn').href = 'https://wa.me/' + ADMIN_PHONE + '?text=' + encodeURIComponent(msg);
+    try { new QRCode(qrcodeDiv, { text: upiLink, width: 200, height: 200, colorDark: '#0a1f44', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e) { qrcodeDiv.textContent = 'QR generation failed.'; }
   }
 })();
 </script>
