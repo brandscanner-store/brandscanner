@@ -38,17 +38,34 @@ button:disabled{opacity:.6;cursor:wait}
 .summary-row.total{font-weight:700;font-size:16px;padding-top:8px;border-top:1px solid var(--border);margin-top:6px;color:var(--navy)}
 .summary-row.highlight{color:var(--green-dark);font-weight:700}
 
-/* UPI Payment Box */
-.upi-box{text-align:center;margin-top:16px;padding:24px 16px;background:var(--card);border-radius:14px;border:2px solid var(--navy)}
+/* Premium UPI Box */
+.upi-box{margin-top:16px;padding:20px;background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow: 0 4px 15px rgba(0,0,0,0.05)}
 .upi-amount-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 .rupee-symbol{font-size:28px;font-weight:800;color:var(--navy)}
-.upi-amount-input{width: 120px; font-size:28px; font-weight:800; color:var(--navy); border:none; background:transparent; border-bottom:2px dashed var(--navy); text-align:center; padding:0;}
+.upi-amount-input{width: 130px; font-size:28px; font-weight:800; color:var(--navy); border:none; background:transparent; border-bottom:2px dashed var(--navy); text-align:center; padding:0;}
 .upi-amount-input:focus{outline:none; border-bottom:2px solid var(--navy);}
-.min-advance-note{font-size:11px;color:var(--danger);margin-bottom:12px;font-weight:600}
-.upi-instruction{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
-.pay-upi-btn{display:block;width:100%;padding:16px;background:linear-gradient(135deg, #0a1f44, #1a2f56);color:#fff;text-decoration:none;font-weight:700;font-size:16px;border-radius:12px;box-shadow:0 4px 12px rgba(10,31,68,.2);margin-bottom:12px}
+.min-advance-note{font-size:11px;color:var(--danger);margin-bottom:16px;font-weight:600;text-align:center;}
+
+.enter-upi-sec{background:var(--bg); padding:16px; border-radius:12px; margin-bottom:16px;}
+.input-group{position:relative; display:flex; align-items:center;}
+.input-group input{padding-right:40px;}
+.verify-icon{position:absolute; right:12px; font-size:18px; display:none;}
+.verify-icon.valid{display:block; color:var(--green-dark);}
+.verify-icon.invalid{display:block; color:var(--danger);}
+
+/* Action Buttons */
+.action-btns{display:flex; flex-direction:column; gap:10px;}
+.pay-upi-btn{display:block;width:100%;padding:16px;background:linear-gradient(135deg, #0a1f44, #1a2f56);color:#fff;text-decoration:none;font-weight:700;font-size:16px;border-radius:12px;box-shadow:0 4px 12px rgba(10,31,68,.2);text-align:center;border:none;cursor:pointer;transition:all .2s;}
 .pay-upi-btn:active{transform:scale(.98)}
-.upi-id-text{font-family:monospace;font-size:14px;color:var(--navy);background:var(--soft);padding:8px 12px;border-radius:8px;display:inline-block;margin-top:10px}
+
+.qr-toggle-btn{display:block;width:100%;padding:14px;background:var(--bg);color:var(--navy);border:2px solid var(--navy);text-decoration:none;font-weight:700;font-size:15px;border-radius:12px;text-align:center;cursor:pointer;margin-top:0;}
+
+/* QR Code Container */
+.qr-container{display:none; margin-top:16px; padding:20px; background:#fff; border-radius:12px; border:2px dashed var(--navy); text-align:center;}
+.qr-container.show{display:block; animation: fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(-10px)}to{opacity:1; transform:translateY(0)}}
+.qr-container img, .qr-container canvas{border-radius:8px;}
+.qr-text{font-size:13px; color:var(--muted); margin-top:10px; font-weight:600;}
 
 .wa-btn{display:block;text-align:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:16px;padding:14px;border-radius:12px;margin-top:20px}
 .wa-btn:active{opacity:.85}
@@ -109,12 +126,24 @@ button:disabled{opacity:.6;cursor:wait}
       </div>
       <div class="min-advance-note" id="minAdvanceNote">Minimum advance: ₹200</div>
       
-      <div class="upi-instruction">Niche button dabayein, aapke phone me UPI app khul jayega. Payment complete karein.</div>
+      <div class="enter-upi-sec">
+        <label style="margin-top:0;">Apni UPI ID daalein (Optional for App)</label>
+        <div class="input-group">
+          <input type="text" id="userUpiId" placeholder="Enter your UPI ID" oninput="validateUserUpi()">
+          <span class="verify-icon" id="verifyIcon">✓</span>
+        </div>
+      </div>
       
-      <a id="payUpiBtn" class="pay-upi-btn" target="_blank" rel="noopener">💳 Pay via UPI App</a>
-      
-      <div>Ya is UPI ID par pay karein:</div>
-      <div class="upi-id-text" id="upiText">8980161610@oksbi</div>
+      <div class="action-btns">
+        <a id="payUpiBtn" class="pay-upi-btn" target="_blank" rel="noopener" style="opacity:0.5; pointer-events:none;">💳 Proceed to Pay via App</a>
+        <button id="toggleQrBtn" class="qr-toggle-btn" onclick="toggleQR()">📱 Generate QR Code</button>
+      </div>
+
+      <div class="qr-container" id="qrContainer">
+        <div id="qrcode"></div>
+        <div class="qr-text">Scan this QR using GPay, PhonePe, Paytm or any UPI app.</div>
+      </div>
+
     </div>
 
     <div class="summary">
@@ -124,15 +153,17 @@ button:disabled{opacity:.6;cursor:wait}
     </div>
 
     <div class="note">
-      ⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot aur UTR number ke saath order details bhejna zaroori hai.
+      ⚠️ Payment ke baad neeche WhatsApp button dabayein — screenshot aur UTR ke saath order confirm karein.
     </div>
 
     <a id="waBtn" class="wa-btn" target="_blank" rel="noopener">WhatsApp par order confirm karein</a>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 (function () {
-  var UPI_ID = '8980161610@oksbi'; 
+  var UPI_ID = 'khansayasin143@oksbi'; 
   var UPI_NAME = 'BrandScanner';
   var ADMIN_PHONE = '917990643295';
 
@@ -144,8 +175,10 @@ button:disabled{opacity:.6;cursor:wait}
   var totalOrderValue = 0;
   
   var minAdvance = 0;
-  var currentPayMode = 'cod'; // 'cod' or 'prepaid'
+  var currentPayMode = 'cod';
   var currentCustomer = null;
+  var isUpiValid = false;
+  var isQrVisible = false;
 
   var loading = document.getElementById('loading');
   var notFound = document.getElementById('notFound');
@@ -153,14 +186,9 @@ button:disabled{opacity:.6;cursor:wait}
   var step2 = document.getElementById('step2');
 
   function calculateMinAdvance(totalValue, itemCount) {
-    if (totalValue >= 10000) {
-      return Math.round(totalValue * 0.10); 
-    } else if (totalValue >= 5000) {
-      var base = 200 + ((itemCount - 1) * 100);
-      return base * 2; 
-    } else {
-      return 200 + ((itemCount - 1) * 100); 
-    }
+    if (totalValue >= 10000) return Math.round(totalValue * 0.10); 
+    if (totalValue >= 5000) return (200 + ((itemCount - 1) * 100)) * 2; 
+    return 200 + ((itemCount - 1) * 100); 
   }
 
   if (mode === 'cart') {
@@ -234,21 +262,13 @@ button:disabled{opacity:.6;cursor:wait}
     if (!/^\d{6}$/.test(pincode)) { errEl.textContent = 'Sahi 6-digit Pincode daalein.'; return; }
 
     currentCustomer = { name: name, phone: phone, address: address, pincode: pincode, landmark: landmark };
-    showPaymentPage();
-  });
-
-  function showPaymentPage() {
     step1.classList.add('hidden');
     step2.classList.remove('hidden');
-
-    document.getElementById('sTotal').textContent = fmt(totalOrderValue);
-    document.getElementById('upiText').textContent = UPI_ID;
     
-    // Default COD mode
+    document.getElementById('sTotal').textContent = fmt(totalOrderValue);
     setPayMode('cod');
-  }
+  });
 
-  // Global functions for HTML events
   window.setPayMode = function(m) {
     currentPayMode = m;
     document.getElementById('opt-cod').classList.toggle('active', m === 'cod');
@@ -261,14 +281,12 @@ button:disabled{opacity:.6;cursor:wait}
       input.readOnly = false;
       input.value = minAdvance;
       input.min = minAdvance;
-      input.max = totalOrderValue;
       minNote.style.display = 'block';
       minNote.textContent = 'Minimum advance: ' + fmt(minAdvance);
     } else {
-      input.readOnly = true; // Prepaid me full amount fix hoga
+      input.readOnly = true; 
       input.value = totalOrderValue;
       input.min = totalOrderValue;
-      input.max = totalOrderValue;
       minNote.style.display = 'none';
     }
     onAmountChange();
@@ -277,20 +295,107 @@ button:disabled{opacity:.6;cursor:wait}
   window.onAmountChange = function() {
     var amt = Number(document.getElementById('payAmountInput').value);
     if (!isFinite(amt) || amt < 0) amt = 0;
-    
-    // UI Update for Summary
     var cod = totalOrderValue - amt;
     if (cod < 0) cod = 0;
     
     document.getElementById('sAdvance').textContent = fmt(amt);
     document.getElementById('sCod').textContent = fmt(cod);
+    updateLinks(amt, cod);
+    
+    if (isQrVisible) {
+      generateQR(amt);
+    }
+  };
 
-    // Update UPI Link
+  window.checkMinAmount = function() {
+    var input = document.getElementById('payAmountInput');
+    var amt = Number(input.value);
+    if (currentPayMode === 'cod' && (amt < minAdvance || isNaN(amt))) {
+      alert('Minimum advance ' + fmt(minAdvance) + ' dena zaroori hai.');
+      input.value = minAdvance;
+      onAmountChange();
+    }
+  };
+
+  window.validateUserUpi = function() {
+    var input = document.getElementById('userUpiId');
+    var icon = document.getElementById('verifyIcon');
+    var btn = document.getElementById('payUpiBtn');
+    var val = input.value.trim();
+
+    var regex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+
+    if (val.length === 0) {
+      icon.className = 'verify-icon';
+      isUpiValid = false;
+    } else if (regex.test(val)) {
+      icon.className = 'verify-icon valid';
+      icon.textContent = '✅';
+      isUpiValid = true;
+    } else {
+      icon.className = 'verify-icon invalid';
+      icon.textContent = '❌';
+      isUpiValid = false;
+    }
+
+    if (isUpiValid) {
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+      btn.textContent = '💳 Proceed to Pay via App';
+    } else {
+      btn.style.opacity = '0.5';
+      btn.style.pointerEvents = 'none';
+      btn.textContent = 'Enter UPI ID to Pay';
+    }
+    onAmountChange();
+  };
+
+  window.toggleQR = function() {
+    var qrContainer = document.getElementById('qrContainer');
+    var btn = document.getElementById('toggleQrBtn');
+    
+    if (isQrVisible) {
+      qrContainer.classList.remove('show');
+      btn.textContent = '📱 Generate QR Code';
+      isQrVisible = false;
+    } else {
+      qrContainer.classList.add('show');
+      btn.textContent = '❌ Hide QR Code';
+      isQrVisible = true;
+      var amt = Number(document.getElementById('payAmountInput').value);
+      generateQR(amt);
+    }
+  };
+
+  function generateQR(amt) {
     var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
     var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
+    
+    var qrcodeDiv = document.getElementById('qrcode');
+    qrcodeDiv.innerHTML = '';
+    
+    try {
+      new QRCode(qrcodeDiv, {
+        text: upiLink,
+        width: 200,
+        height: 200,
+        colorDark: '#0a1f44',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {
+      qrcodeDiv.textContent = 'QR generate nahi hua.';
+    }
+  }
+
+  function updateLinks(amt, cod) {
+    var userUpi = document.getElementById('userUpiId').value.trim();
+    var note = 'BS-' + (mode === 'cart' ? 'CART' : product.code) + ' Payment';
+    
+    var upiLink = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) + '&pn=' + encodeURIComponent(UPI_NAME) + '&am=' + amt + '&cu=INR' + '&tn=' + encodeURIComponent(note);
+    if (isUpiValid && userUpi) { upiLink += '&payer_vpa=' + encodeURIComponent(userUpi); }
     document.getElementById('payUpiBtn').href = upiLink;
 
-    // Update WhatsApp Message
     var pName = (mode === 'cart') ? (cartItems.length + ' Watches') : product.name;
     var msg = 'Hi BrandScanner, order karna hai:\n\n';
     msg += '📦 *' + pName + '*\n';
@@ -298,7 +403,10 @@ button:disabled{opacity:.6;cursor:wait}
     msg += 'Total: ' + fmt(totalOrderValue) + '\n';
     msg += 'Payment Mode: ' + (currentPayMode === 'cod' ? 'Partial (COD)' : 'Full Prepaid') + '\n';
     msg += 'Paying Now: ' + fmt(amt) + ' (UPI)\n';
-    msg += 'Remaining COD: ' + fmt(cod) + '\n\n';
+    msg += 'Remaining COD: ' + fmt(cod) + '\n';
+    if (isUpiValid && userUpi) msg += 'My UPI: ' + userUpi + '\n\n';
+    else msg += '\n';
+    
     msg += '👤 ' + currentCustomer.name + '\n';
     msg += '📱 ' + currentCustomer.phone + '\n';
     msg += '🏠 ' + currentCustomer.address + '\n';
@@ -307,19 +415,7 @@ button:disabled{opacity:.6;cursor:wait}
     msg += '\n_UTR/Screenshot attach kiya hai._';
 
     document.getElementById('waBtn').href = 'https://wa.me/' + ADMIN_PHONE + '?text=' + encodeURIComponent(msg);
-  };
-
-  window.checkMinAmount = function() {
-    var input = document.getElementById('payAmountInput');
-    var amt = Number(input.value);
-    
-    if (currentPayMode === 'cod' && (amt < minAdvance || isNaN(amt))) {
-      alert('Minimum advance ' + fmt(minAdvance) + ' dena zaroori hai.');
-      input.value = minAdvance;
-      onAmountChange();
-    }
-  };
-
+  }
 })();
 </script>
 </body>
